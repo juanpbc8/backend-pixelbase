@@ -1,0 +1,13 @@
+# COPIA ESTE ARCHIVO COMO: application-dev.properties
+# Y LLENA TUS DATOS LOCALES
+
+# Comportamiento de Spring para el equipo
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/pixelbase_db
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=password
+CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:5173
+JWT_SECRET=escribe_una_clave_larga_de_prueba_aqui
