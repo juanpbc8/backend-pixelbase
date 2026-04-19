@@ -1,5 +1,6 @@
 package com.pixelbase.backend.common.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,6 +12,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -20,13 +22,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
-    // Conflictos de negocio (409) - Ej: Email ya registrado
+    // Conflictos de negocio (409) - Ej.: Email ya registrado
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiError> handleConflict(ConflictException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
-    // Errores de solicitud (400) - Ej: Datos mal formados, parámetros inválidos
+    // Errores de solicitud (400) - Ej.: Datos mal formados, parámetros inválidos
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
@@ -60,16 +62,18 @@ public class GlobalExceptionHandler {
     // Error de tipo en parámetros de URL (400) - Ej: /users/abc en lugar de /users/123
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String typeName = ex.getRequiredType() != null
+                ? ex.getRequiredType().getSimpleName()
+                : "desconocido";
         String message = String.format("El parámetro '%s' debe ser de tipo %s",
-                ex.getName(), ex.getRequiredType().getSimpleName());
+                ex.getName(), typeName);
 
         return buildResponse(HttpStatus.BAD_REQUEST, message, null);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
-        // Loguea el error real en la consola/archivo
-        ex.printStackTrace();
+        log.error("Error no controlado capturado: {}", ex.getMessage(), ex);
 
         // Al usuario (y al frontend) solo dale un mensaje genérico
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ha ocurrido un error inesperado en el servidor", null);
