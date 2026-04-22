@@ -1,4 +1,4 @@
-package com.pixelbase.backend.repository;
+package com.pixelbase.backend.catalog.repository;
 
 import java.util.List;
 import java.util.Optional;
