@@ -48,7 +48,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/login", "/api/v1/auth/register",
-                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+                                "/api/v1/public/**"
                         ).permitAll()
                         // Solo los CLIENTES pueden acceder a su perfil de tienda
                         .requestMatchers("/api/v1/store/**").hasRole("CUSTOMER")
