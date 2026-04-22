@@ -3,6 +3,8 @@ package com.pixelbase.backend.catalog.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pixelbase.backend.common.entity.AuditableEntity;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,16 +33,16 @@ import lombok.Builder;
 
 @Table(name = "categories")
 
-public class CategoryEntity {
+public class CategoryEntity extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @NotBlank
     @Size(max = 100)
     @Column(name = "category_name", nullable = false, length = 80)
-    private String Nombre;
+    private String name;
 
     @ManyToOne
     @JoinColumn(name = "parent_category_id")

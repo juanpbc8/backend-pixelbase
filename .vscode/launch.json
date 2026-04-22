@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot - PixelBase (dev)",
+      "request": "launch",
+      "mainClass": "com.pixelbase.backend.BackendPixelbaseApplication",
+      "projectName": "backend-pixelbase",
+      "args": "--spring.profiles.active=dev",
+      "vmArgs": "-Dspring.profiles.active=dev"
+    }
+  ]
+}

@@ -42,7 +42,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CategoryEntity> create(@Valid @RequestBody CategoryRequest req) {
         CategoryEntity entity = new CategoryEntity();
-        entity.setNombre(req.getName());
+        entity.setName(req.getName());
         if (req.getParentCategoryId() != null) {
             CategoryEntity parent = new CategoryEntity();
             parent.setId(req.getParentCategoryId());
@@ -55,7 +55,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoryEntity> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest req) {
         CategoryEntity entity = new CategoryEntity();
-        entity.setNombre(req.getName());
+        entity.setName(req.getName());
         if (req.getParentCategoryId() != null) {
             CategoryEntity parent = new CategoryEntity();
             parent.setId(req.getParentCategoryId());

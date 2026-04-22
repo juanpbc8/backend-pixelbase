@@ -42,7 +42,7 @@ public class ProductImageEntity extends AuditableEntity {
     @NotNull
     @Positive
     @Column(nullable = false)
-    private Byte position;
+    private Integer position;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)

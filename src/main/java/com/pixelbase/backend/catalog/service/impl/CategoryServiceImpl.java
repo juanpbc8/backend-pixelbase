@@ -39,7 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryEntity update(Long id, CategoryEntity category) {
         CategoryEntity existing = findById(id);
-        existing.setNombre(category.getNombre());
+        existing.setName(category.getName());
         existing.setParentCategory(category.getParentCategory());
         return categoryRepository.save(existing);
     }
