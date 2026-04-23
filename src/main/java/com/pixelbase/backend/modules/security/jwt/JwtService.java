@@ -2,7 +2,6 @@ package com.pixelbase.backend.modules.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +31,8 @@ public class JwtService {
     // Inicialización correcta de la clave inyectada
     @PostConstruct
     public void init() {
-        // Asume que el valor de application.properties está en formato Base64.
-        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+        // Usa los bytes UTF-8 del secreto directamente (mínimo 32 caracteres para HS256).
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(UserDetails userDetails) {
