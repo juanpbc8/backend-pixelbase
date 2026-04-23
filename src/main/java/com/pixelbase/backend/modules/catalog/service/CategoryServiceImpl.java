@@ -2,6 +2,7 @@ package com.pixelbase.backend.modules.catalog.service;
 
 import com.pixelbase.backend.common.exception.BadRequestException;
 import com.pixelbase.backend.common.exception.ResourceNotFoundException;
+import com.pixelbase.backend.common.util.SlugUtils;
 import com.pixelbase.backend.modules.catalog.domain.CategoryEntity;
 import com.pixelbase.backend.modules.catalog.dto.request.CategoryRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.CategoryResponse;
@@ -39,7 +40,7 @@ public class CategoryServiceImpl implements ICategoryService {
     @Transactional
     public CategoryResponse create(CategoryRequest request) {
         CategoryEntity entity = categoryMapper.toEntity(request);
-        entity.setSlug(generateSlug(request.name())); // Slug automático
+        entity.setSlug(SlugUtils.toSlug(request.name())); // Slug automático
 
         if (request.parentId() != null) {
             CategoryEntity parent = categoryRepository.findById(request.parentId())
@@ -49,10 +50,6 @@ public class CategoryServiceImpl implements ICategoryService {
         }
 
         return categoryMapper.toResponse(categoryRepository.save(entity));
-    }
-
-    private String generateSlug(String name) {
-        return name.toLowerCase().trim().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
     }
 
     // Lógica para validar profundidad máxima de categorías (máximo 3 niveles)

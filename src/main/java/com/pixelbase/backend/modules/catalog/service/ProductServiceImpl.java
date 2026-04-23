@@ -3,6 +3,7 @@ package com.pixelbase.backend.modules.catalog.service;
 import com.pixelbase.backend.common.dto.PageResponse;
 import com.pixelbase.backend.common.exception.ConflictException;
 import com.pixelbase.backend.common.exception.ResourceNotFoundException;
+import com.pixelbase.backend.common.util.SlugUtils;
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductImageEntity;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
@@ -85,7 +86,7 @@ public class ProductServiceImpl implements IProductService {
 
         // 2. Mapear request a entidad (sin relaciones aún)
         ProductEntity product = productMapper.toEntity(request);
-        product.setSlug(generateSlug(request.name())); // Slug automático
+        product.setSlug(SlugUtils.toSlug(request.name())); // Slug automático
 
         // 3. Resolver Marca y Categoría por ID
         product.setBrand(brandRepository.findById(request.brandId())
@@ -122,7 +123,7 @@ public class ProductServiceImpl implements IProductService {
         product.setSpecifications(request.specifications()); // JSONB flexible
 
         // Solo regeneramos el slug si el nombre cambió (Opcional, según negocio)
-        product.setSlug(generateSlug(request.name()));
+        product.setSlug(SlugUtils.toSlug(request.name()));
 
         // Resolver nuevas relaciones si cambiaron
         product.setBrand(brandRepository.findById(request.brandId())
@@ -164,9 +165,5 @@ public class ProductServiceImpl implements IProductService {
         product.setStatus(request.status());
         // No necesitamos llamar a save() explícitamente gracias a @Transactional
         // y al estado 'Managed' de JPA.
-    }
-
-    private String generateSlug(String name) {
-        return name.toLowerCase().trim().replaceAll("[^a-z0-9]+", "-");
     }
 }
