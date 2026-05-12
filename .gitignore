@@ -39,3 +39,8 @@ build/
 # Spring Boot sensitive files
 src/main/resources/application-dev.properties
 src/main/resources/application-local.properties
+
+# Ignorar metadatos de Windows (ADS)
+*Zone.Identifier
+*:Zone.Identifier
+*_Zone.Identifier
