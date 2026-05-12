@@ -1,2 +1,9 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# 1. Regla general: Forzar que todos los archivos de texto se guarden como LF en el repo
+* text=auto eol=lf
+
+# 2. Excepciones para ejecutables y scripts de Windows
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+
+# 3. Forzar LF en el wrapper de Maven
+/mvnw      text eol=lf
