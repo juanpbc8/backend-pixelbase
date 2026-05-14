@@ -15,7 +15,6 @@ public class UserAddressEntity extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Integer quantity;
 
     @Column(name = "address_line")
     private String addressLine;
