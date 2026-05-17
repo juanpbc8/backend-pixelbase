@@ -29,23 +29,23 @@ public class UserAddressSeeder implements DataSeeder {
 
         // Buscamos solo a los que tienen rol CUSTOMER
         List<UserEntity> customers = userRepository.findAll().stream()
-            .filter(u -> u.getRole() == Role.CUSTOMER)
+            .filter(u -> u.getRole() == Role.CLIENTE)
             .toList();
 
         for (UserEntity customer : customers) {
             // Generar 2 direcciones por cada cliente según su email para variar la data
             if (customer.getEmail().contains("juan")) {
-                createAddress(customer, "Av. Jose Pardo 123", "Lima", "Lima", "Miraflores", "Cerca al Parque Kennedy", true, AddressType.HOME);
-                createAddress(customer, "Calle Las Orquideas 456", "Lima", "Lima", "San Isidro", "Edificio Capital", false, AddressType.WORK);
+                createAddress(customer, "Av. Jose Pardo 123", "Lima", "Lima", "Miraflores", "Cerca al Parque Kennedy", true, AddressType.RESIDENCIAL);
+                createAddress(customer, "Calle Las Orquideas 456", "Lima", "Lima", "San Isidro", "Edificio Capital", false, AddressType.TRABAJO);
             } else if (customer.getEmail().contains("maria")) {
-                createAddress(customer, "Calle Mercaderes 210", "Arequipa", "Arequipa", "Cercado", "A espaldas de la Plaza de Armas", true, AddressType.HOME);
-                createAddress(customer, "Urb. Yanahuara C-15", "Arequipa", "Arequipa", "Yanahuara", "Frente al mirador", false, AddressType.WORK);
+                createAddress(customer, "Calle Mercaderes 210", "Arequipa", "Arequipa", "Cercado", "A espaldas de la Plaza de Armas", true, AddressType.RESIDENCIAL);
+                createAddress(customer, "Urb. Yanahuara C-15", "Arequipa", "Arequipa", "Yanahuara", "Frente al mirador", false, AddressType.TRABAJO);
             } else if (customer.getEmail().contains("lucho")) {
-                createAddress(customer, "Jr. Pizarro 550", "La Libertad", "Trujillo", "Trujillo", "Cerca a la Plazuela El Recreo", true, AddressType.HOME);
-                createAddress(customer, "Av. Larco 890", "La Libertad", "Trujillo", "Huanchaco", "Cerca al muelle", false, AddressType.WORK);
+                createAddress(customer, "Jr. Pizarro 550", "La Libertad", "Trujillo", "Trujillo", "Cerca a la Plazuela El Recreo", true, AddressType.RESIDENCIAL);
+                createAddress(customer, "Av. Larco 890", "La Libertad", "Trujillo", "Huanchaco", "Cerca al muelle", false, AddressType.TRABAJO);
             } else { // Para Ana y otros
-                createAddress(customer, "Av. El Sol 400", "Cusco", "Cusco", "Cusco", "Frente al Qorikancha", true, AddressType.HOME);
-                createAddress(customer, "Urb. Larapa H-2", "Cusco", "Cusco", "San Jeronimo", "Cerca a la universidad", false, AddressType.WORK);
+                createAddress(customer, "Av. El Sol 400", "Cusco", "Cusco", "Cusco", "Frente al Qorikancha", true, AddressType.RESIDENCIAL);
+                createAddress(customer, "Urb. Larapa H-2", "Cusco", "Cusco", "San Jeronimo", "Cerca a la universidad", false, AddressType.TRABAJO);
             }
         }
         log.info(" ✅ -> UserAddressSeeder: 2 direcciones asignadas a cada cliente.");

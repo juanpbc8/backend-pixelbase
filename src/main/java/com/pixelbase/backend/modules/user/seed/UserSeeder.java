@@ -55,25 +55,25 @@ public class UserSeeder implements DataSeeder {
                 .passwordHash(passwordEncoder.encode("cliente123"))
                 .firstName("Juan").lastName("Pérez Lucho")
                 .phone("945123456").documentType(DocumentType.DNI).documentNumber("74859612")
-                .role(Role.CUSTOMER).build(),
+                .role(Role.CLIENTE).build(),
             UserEntity.builder()
                 .email("maria.quispe@outlook.com")
                 .passwordHash(passwordEncoder.encode("cliente123"))
                 .firstName("María").lastName("Quispe Choque")
                 .phone("912345678").documentType(DocumentType.DNI).documentNumber("45612378")
-                .role(Role.CUSTOMER).build(),
+                .role(Role.CLIENTE).build(),
             UserEntity.builder()
                 .email("lucho.vidal@yahoo.es")
                 .passwordHash(passwordEncoder.encode("cliente123"))
                 .firstName("Luis").lastName("Vidal Bazán")
                 .phone("955612378").documentType(DocumentType.CE).documentNumber("001234567")
-                .role(Role.CUSTOMER).build(),
+                .role(Role.CLIENTE).build(),
             UserEntity.builder()
                 .email("ana.garcia@unmsm.edu.pe")
                 .passwordHash(passwordEncoder.encode("cliente123"))
                 .firstName("Ana").lastName("García Rosas")
                 .phone("944567812").documentType(DocumentType.DNI).documentNumber("87654321")
-                .role(Role.CUSTOMER).build()
+                .role(Role.CLIENTE).build()
         );
 
         customers.stream()
