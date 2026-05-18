@@ -6,3 +6,49 @@ insert_final_newline = true
 charset = utf-8
 indent_style = space
 indent_size = 4
+trim_trailing_whitespace = true
+
+[*.java]
+# ---- ESPECIFICACIONES GENERALES ----
+max_line_length = 110
+
+# ---- ESPACIADO VERTICAL (Dar "Aire" al Código) ----
+ij_java_blank_lines_around_method = 1
+ij_java_blank_lines_around_class = 1
+ij_java_blank_lines_around_field = 0
+ij_java_keep_blank_lines_in_declarations = 1
+ij_java_keep_blank_lines_in_code = 1
+ij_java_keep_blank_lines_before_right_brace = 0
+
+# ---- ESTILO DE LLAVES ----
+ij_java_class_brace_style = end_of_line
+ij_java_method_brace_style = end_of_line
+ij_java_block_brace_style = end_of_line
+
+# ---- ENVOLTURA DE PARÁMETROS Y FIRMAS PESADAS ----
+ij_java_method_parameters_wrap = on_every_item
+ij_java_call_parameters_wrap = on_every_item
+ij_java_extends_list_wrap = normal
+ij_java_throws_list_wrap = normal
+
+# ---- ENVOLTURA DE ANOTACIONES EN LÍNEA ----
+# ij_java_field_annotation_wrap = normal
+# ij_java_method_annotation_wrap = split_into_lines
+# ij_java_parameter_annotation_wrap = normal
+# ij_java_class_annotation_wrap = split_into_lines
+
+# ---- COMPORTAMIENTO PARA CONTENEDORES Y TEXTOS LARGOS ----
+ij_java_wrap_long_lines = true
+ij_java_annotation_parameter_wrap = off
+ij_java_array_initializer_wrap = split_into_lines
+ij_java_array_initializer_new_line_after_left_brace = true
+ij_java_array_initializer_right_brace_on_new_line = true
+
+# CONFIGURACIÓN SALVADORA: Mantiene los saltos de línea que tú maquetes a mano en bloques complejos
+ij_java_keep_line_breaks = true
+
+# ---- ESPACIADOS DE SINTAXIS ----
+ij_java_space_before_method_call_parentheses = false
+ij_java_space_before_method_parentheses = false
+ij_java_space_before_if_parentheses = true
+ij_java_space_before_while_parentheses = true
