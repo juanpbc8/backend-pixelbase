@@ -1,13 +1,29 @@
-# COPIA ESTE ARCHIVO COMO: application-dev.properties
-# Y LLENA TUS DATOS LOCALES
+# ====================================================================
+# PIXELBASE - PLANTILLA DE ENTORNO LOCAL (PERFIL: DEV)
+# ====================================================================
+# 1. Copia este archivo en la misma carpeta y renombralo como: application-dev.properties
+# 2. Rellena las variables con los datos de tu PostgreSQL local.
+# 3. El archivo resultante ya está protegido en el .gitignore (no se subirá).
 
-# Comportamiento de Spring para el equipo
+# --------------------------------------------------------------------
+# INYECCIÓN DE VARIABLES DE ENTORNO LOCALES
+# --------------------------------------------------------------------
+PORT=8080
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/pixelbase
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=tu_password_local_aqui
+
+# Configuración inicial para comunicación con frontend en local
+CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:5173
+
+# Secretos de Firma de Tokens (Usar claves descriptivas largas en desarrollo)
+JWT_SECRET=ClaveSecretaDePruebasLocalesPixelbaseDeAlMenos32Bytes2026!
+JWT_EXPIRATION=86400000
+
+# --------------------------------------------------------------------
+# PROPIEDADES EXCLUSIVAS DE DEBUGGING (Solo se activan en modo DEV)
+# --------------------------------------------------------------------
+# Esto permite auditar las consultas SQL impresas directamente en la consola local.
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
-
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/pixelbase
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=
-CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:5173
-JWT_SECRET=escribe_una_clave_larga_de_prueba_aqui
