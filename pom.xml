@@ -32,6 +32,8 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencies>
         <dependency>
@@ -147,6 +149,16 @@
                             <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version> <!-- Asegúrate de usar la versión que sale en tu error -->
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <!-- Cambiamos esto para que acepte cualquier carácter occidental en las propiedades -->
+                    <propertiesEncoding>ISO-8859-1</propertiesEncoding>
                 </configuration>
             </plugin>
         </plugins>
