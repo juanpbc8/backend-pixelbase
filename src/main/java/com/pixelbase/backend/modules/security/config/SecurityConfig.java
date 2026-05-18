@@ -1,5 +1,6 @@
 package com.pixelbase.backend.modules.security.config;
 
+import com.pixelbase.backend.modules.security.exception.CustomAccessDeniedHandler;
 import com.pixelbase.backend.modules.security.exception.RestAuthenticationEntryPoint;
 import com.pixelbase.backend.modules.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final RestAuthenticationEntryPoint unauthorizedHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -38,27 +40,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors ->
-                        cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(exceptionHandling ->
-                        exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/v1/auth/login", "/api/v1/auth/register",
-                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/api/v1/public/**"
-                        ).permitAll()
-                        // Solo los CLIENTES pueden acceder a su perfil de tienda
-                        .requestMatchers("/api/v1/store/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        // Fallback de seguridad
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors ->
+                cors.configurationSource(corsConfigurationSource()))
+            .exceptionHandling(exceptionHandling -> exceptionHandling
+                .authenticationEntryPoint(unauthorizedHandler)
+                .accessDeniedHandler(accessDeniedHandler))
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/api/v1/auth/login", "/api/v1/auth/register",
+                    "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+                    "/api/v1/public/**"
+                ).permitAll()
+                // Solo los CLIENTES pueden acceder a su perfil de tienda
+                .requestMatchers("/api/v1/store/**").hasRole("CUSTOMER")
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // Fallback de seguridad
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
     }
 
     @Bean
@@ -79,7 +82,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+        throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
