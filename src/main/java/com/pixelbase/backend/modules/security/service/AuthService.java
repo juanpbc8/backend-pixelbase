@@ -28,7 +28,7 @@ public class AuthService {
         // 1. Autenticar: Spring Security llama internamente a UserDetailsServiceImpl
         // El AuthenticationManager lanzará DisabledException si enabled=false
         Authentication authenticated = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+            new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
         // 2. Recuperar el Principal (nuestro record UserDetailsImpl) del resultado de la autenticación
@@ -48,11 +48,11 @@ public class AuthService {
         }
 
         UserEntity newUser = UserEntity.builder()
-                .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
-                .role(Role.CUSTOMER) // Por defecto para ecommerce
-                .enabled(true)
-                .build();
+            .email(request.email())
+            .passwordHash(passwordEncoder.encode(request.password()))
+            .role(Role.CLIENTE) // Por defecto para ecommerce
+            .enabled(true)
+            .build();
 
         userService.register(newUser);
 

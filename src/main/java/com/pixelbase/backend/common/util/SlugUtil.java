@@ -4,11 +4,15 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-public class SlugUtils {
+public final class SlugUtil {
 
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
     private static final Pattern EDGES = Pattern.compile("(^-+)|(-+$)");
+
+    private SlugUtil() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     public static String toSlug(String input) {
         if (input == null) return "";

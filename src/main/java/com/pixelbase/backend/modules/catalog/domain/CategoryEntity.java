@@ -19,10 +19,10 @@ public class CategoryEntity extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(name = "slug", nullable = false, unique = true, length = 150)
     private String slug;
 
     @ManyToOne(fetch = FetchType.LAZY)
