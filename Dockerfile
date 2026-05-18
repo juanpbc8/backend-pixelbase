@@ -1,5 +1,3 @@
-LABEL authors="jbald"
-
 # ==========================================
 # ETAPA 1: Compilación (Build Stage)
 # ==========================================
@@ -26,9 +24,8 @@ WORKDIR /app
 # Copiar únicamente el JAR compilado desde la etapa anterior
 COPY --from=build /app/target/*.jar app.jar
 
-# Candado de Memoria: Limitamos estrictamente el uso de RAM de la JVM.
-# Le asignamos un tope de 400MB de RAM máxima para dejarle espacio libre al Sistema Operativo.
-ENV JAVA_OPTS="-XX:MaxRAM=400m -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+# Ajuste dinámico y seguro para entornos desde 512MB (Render) hasta Droplets más grandes
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=60.0 -XX:MinRAMPercentage=50.0 -Xss512k -Dfile.encoding=UTF-8"
 
 # Exponemos el puerto estándar donde escucha Spring Boot
 EXPOSE 8080
