@@ -29,8 +29,6 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
         """)
     List<CategoryEntity> findAllWithChildren();
 
-    boolean existsBySlug(String slug);
-
     boolean existsByParentId(Long parentId);
 
     long countByParentId(Long parentId);

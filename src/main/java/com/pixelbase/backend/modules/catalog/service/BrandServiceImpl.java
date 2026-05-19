@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -166,7 +167,7 @@ public class BrandServiceImpl implements IBrandService {
     }
 
     /**
-     * Valida que el nombre y el slug no estén ya registrados en otra marca,
+     * Válida que el nombre y el slug no estén ya registrados en otra marca,
      * preservando mensajes de conflicto claros para la operación de negocio.
      *
      * @param name      nombre legible recibido en la petición
@@ -179,7 +180,7 @@ public class BrandServiceImpl implements IBrandService {
     private void validateBrandUniqueness(String name, String slug, Long currentId) {
         // 1. Control por similitud exacta de caracteres
         brandRepository.findByNameIgnoreCase(name).ifPresent(existing -> {
-            if (!existing.getId().equals(currentId)) {
+            if (!Objects.equals(existing.getId(), currentId)) {
                 throw new ConflictException(String.format(
                     "Ya existe una marca registrada con el nombre o slug '%s'.",
                     name
@@ -189,7 +190,7 @@ public class BrandServiceImpl implements IBrandService {
 
         // 2. Control de colisión por normalización de URL (Slug)
         brandRepository.findBySlug(slug).ifPresent(existing -> {
-            if (!existing.getId().equals(currentId)) {
+            if (!Objects.equals(existing.getId(), currentId)) {
                 throw new ConflictException(String.format(
                     "Ya existe una marca registrada con el nombre o slug '%s'.",
                     slug

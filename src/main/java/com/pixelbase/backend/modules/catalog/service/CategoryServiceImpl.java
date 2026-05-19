@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -292,7 +293,7 @@ public class CategoryServiceImpl implements ICategoryService {
     private void validateCategoryUniqueness(String name, String slug, Long currentId) {
         // 1. Control preventivo por nombre exacto (Case Insensitive)
         categoryRepository.findByNameIgnoreCase(name).ifPresent(existing -> {
-            if (!existing.getId().equals(currentId)) {
+            if (!Objects.equals(existing.getId(), currentId)) {
                 throw new ConflictException(String.format(
                     "Ya existe una categoría registrada con el nombre '%s'.",
                     name
@@ -302,7 +303,7 @@ public class CategoryServiceImpl implements ICategoryService {
 
         // 2. Control preventivo de colisión por normalización de URL (Slug)
         categoryRepository.findBySlug(slug).ifPresent(existing -> {
-            if (!existing.getId().equals(currentId)) {
+            if (!Objects.equals(existing.getId(), currentId)) {
                 throw new ConflictException(String.format(
                     "Ya existe una categoría registrada con un nombre equivalente o similar a '%s'.",
                     name
