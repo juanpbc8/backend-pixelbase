@@ -1,26 +1,28 @@
 package com.pixelbase.backend.modules.catalog.mapper;
 
-
 import com.pixelbase.backend.common.config.GlobalMapperConfig;
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductImageEntity;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductCardResponse;
-import com.pixelbase.backend.modules.catalog.dto.response.ProductResponse;
+import com.pixelbase.backend.modules.catalog.dto.response.ProductDetailResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(config = GlobalMapperConfig.class, uses = {BrandMapper.class, CategoryMapper.class})
+@Mapper(config = GlobalMapperConfig.class, uses = {
+    BrandMapper.class,
+    CategoryMapper.class
+})
 public interface ProductMapper {
 
     /**
      * Respuesta detallada para el Admin o Vista de Producto.
      * Mapea automáticamente colecciones y objetos anidados.
      */
-    ProductResponse toResponse(ProductEntity entity);
+    ProductDetailResponse toResponse(ProductEntity entity);
 
     /**
      * Respuesta optimizada para tarjetas del Storefront (Angular).
@@ -37,7 +39,7 @@ public interface ProductMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "brand", ignore = true)
     @Mapping(target = "category", ignore = true)
-    @Mapping(target = "slug", ignore = true)
+    @Mapping(target = "images", ignore = true)
     // El slug se genera automáticamente en el Service
     ProductEntity toEntity(ProductRequest request);
 
@@ -48,9 +50,9 @@ public interface ProductMapper {
     default String mapMainImage(List<ProductImageEntity> images) {
         if (images == null || images.isEmpty()) return null;
         return images.stream()
-                .filter(img -> img.getPosition() == 0)
-                .map(ProductImageEntity::getUrl)
-                .findFirst()
-                .orElse(images.getFirst().getUrl()); // Si no hay posición 0, toma la primera
+            .filter(img -> img.getPosition() == 0)
+            .map(ProductImageEntity::getUrl)
+            .findFirst()
+            .orElse(images.getFirst().getUrl()); // Si no hay posición 0, toma la primera
     }
 }

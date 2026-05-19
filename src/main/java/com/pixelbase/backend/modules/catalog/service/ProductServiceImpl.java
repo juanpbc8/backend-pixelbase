@@ -3,13 +3,15 @@ package com.pixelbase.backend.modules.catalog.service;
 import com.pixelbase.backend.common.dto.PageResponse;
 import com.pixelbase.backend.common.exception.ConflictException;
 import com.pixelbase.backend.common.exception.ResourceNotFoundException;
-import com.pixelbase.backend.common.util.SlugUtils;
+import com.pixelbase.backend.common.util.SlugUtil;
+import com.pixelbase.backend.modules.catalog.domain.BrandEntity;
+import com.pixelbase.backend.modules.catalog.domain.CategoryEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductImageEntity;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductStatusRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductCardResponse;
-import com.pixelbase.backend.modules.catalog.dto.response.ProductResponse;
+import com.pixelbase.backend.modules.catalog.dto.response.ProductDetailResponse;
 import com.pixelbase.backend.modules.catalog.mapper.ProductMapper;
 import com.pixelbase.backend.modules.catalog.repository.BrandRepository;
 import com.pixelbase.backend.modules.catalog.repository.CategoryRepository;
@@ -36,8 +38,8 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageResponse<ProductCardResponse> getStorefrontProducts(
-            String search, Long categoryId, Long brandId,
-            BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        String search, Long categoryId, Long brandId,
+        BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
 
         // 1. Iniciamos la especificación base: Siempre filtrar por productos activos
         // para el storefront público.
@@ -45,75 +47,94 @@ public class ProductServiceImpl implements IProductService {
 
         // 2. Agregamos filtros dinámicos solo si vienen en el request.
         specs = specs.and(ProductSpecification.isActive())
-                .and(ProductSpecification.hasSearch(search))
-                .and(ProductSpecification.hasCategory(categoryId))
-                .and(ProductSpecification.hasBrand(brandId))
-                .and(ProductSpecification.priceBetween(minPrice, maxPrice));
+            .and(ProductSpecification.hasSearch(search))
+            .and(ProductSpecification.hasCategory(categoryId))
+            .and(ProductSpecification.hasBrand(brandId))
+            .and(ProductSpecification.priceBetween(minPrice, maxPrice));
 
         // 3. Ejecutamos la consulta paginada en el repositorio.
         Page<ProductEntity> productPage = productRepository.findAll(specs, pageable);
 
         // 4. Mapeamos la página de entidades a una página de DTO (Cards).
         List<ProductCardResponse> content = productPage.getContent().stream()
-                .map(productMapper::toCardResponse)
-                .toList();
+            .map(productMapper::toCardResponse)
+            .toList();
 
         // 5. Envolvemos en nuestro PageResponse para el frontend.
         return new PageResponse<>(
-                content,
-                productPage.getNumber(),
-                productPage.getSize(),
-                productPage.getTotalElements(),
-                productPage.getTotalPages(),
-                productPage.isLast()
+            content,
+            productPage.getNumber(),
+            productPage.getSize(),
+            productPage.getTotalElements(),
+            productPage.getTotalPages(),
+            productPage.isLast()
         );
     }
 
     @Override
-    public ProductResponse getBySlug(String slug) {
+    public ProductDetailResponse getBySlug(String slug) {
         return productRepository.findBySlug(slug)
-                .map(productMapper::toResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto", slug));
+            .map(productMapper::toResponse)
+            .orElseThrow(() -> new ResourceNotFoundException("Producto", slug));
     }
 
     @Override
     @Transactional
-    public ProductResponse create(ProductRequest request) {
-        // 1. Validar unicidad de SKU
-        if (productRepository.existsBySku(request.sku())) {
-            throw new ConflictException("El SKU ya existe");
+    public ProductDetailResponse create(ProductRequest request) {
+
+        // Resolver relaciones primero
+        BrandEntity brand = brandRepository.findById(request.brandId())
+            .orElseThrow(() -> new ResourceNotFoundException("Marca", request.brandId()));
+
+        CategoryEntity category = categoryRepository.findById(request.categoryId())
+            .orElseThrow(() -> new ResourceNotFoundException("Categoría", request.categoryId()));
+
+        // Validar unicidad de datos ingresados manualmente
+        if (productRepository.existsByPartNumber(request.partNumber())) {
+            throw new ConflictException("El Número de Parte (MPN) '" + request.partNumber() + "' ya está " +
+                "registrado.");
         }
 
-        // 2. Mapear request a entidad (sin relaciones aún)
+        String generatedSlug = SlugUtil.toSlug(request.name());
+        if (productRepository.existsBySlug(generatedSlug)) {
+            throw new ConflictException(
+                "Ya existe un producto con un nombre idéntico o que genera el mismo slug: '" + generatedSlug + "'.");
+        }
+
+        // Generar el SKU automático y seguro usando la secuencia de Postgres
+        Long nextSequence = productRepository.getNextSkuSequence();
+        String generatedSku = String.format("%06d", nextSequence);
+
+        // Mapear request a entidad (sin relaciones aún)
         ProductEntity product = productMapper.toEntity(request);
-        product.setSlug(SlugUtils.toSlug(request.name())); // Slug automático
 
-        // 3. Resolver Marca y Categoría por ID
-        product.setBrand(brandRepository.findById(request.brandId())
-                .orElseThrow(() -> new ResourceNotFoundException("Marca", request.brandId())));
-        product.setCategory(categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría", request.categoryId())));
+        // Asignar los valores controlados por el sistema
+        product.setSku(generatedSku);
+        product.setSlug(generatedSlug);
+        product.setBrand(brand);
+        product.setCategory(category);
 
-        // 4. Sincronizar imágenes usando el method helper "addImage"
+        // Sincronizar imágenes usando el method helper "addImage"
         if (request.images() != null) {
             request.images().forEach(imgDto -> {
                 ProductImageEntity image = ProductImageEntity.builder()
-                        .url(imgDto.url())
-                        .altText(imgDto.altText())
-                        .position(imgDto.position())
-                        .build();
-                product.addImage(image); // Mantiene sincronizada la relación bidireccional
+                    .url(imgDto.url())
+                    .altText(imgDto.altText())
+                    .position(imgDto.position())
+                    .build();
+                product.addImage(image);
             });
         }
 
-        return productMapper.toResponse(productRepository.save(product));
+        ProductEntity savedProduct = productRepository.save(product);
+        return productMapper.toResponse(savedProduct);
     }
 
     @Override
     @Transactional
-    public ProductResponse update(Long id, ProductRequest request) {
+    public ProductDetailResponse update(Long id, ProductRequest request) {
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
 
         // Actualización de campos básicos
         product.setName(request.name());
@@ -123,37 +144,37 @@ public class ProductServiceImpl implements IProductService {
         product.setSpecifications(request.specifications()); // JSONB flexible
 
         // Solo regeneramos el slug si el nombre cambió (Opcional, según negocio)
-        product.setSlug(SlugUtils.toSlug(request.name()));
+        product.setSlug(SlugUtil.toSlug(request.name()));
 
         // Resolver nuevas relaciones si cambiaron
         product.setBrand(brandRepository.findById(request.brandId())
-                .orElseThrow(() -> new ResourceNotFoundException("Marca", request.brandId())));
+            .orElseThrow(() -> new ResourceNotFoundException("Marca", request.brandId())));
         product.setCategory(categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría", request.categoryId())));
+            .orElseThrow(() -> new ResourceNotFoundException("Categoría", request.categoryId())));
 
         return productMapper.toResponse(product); // El Dirty Checking hará el UPDATE
     }
 
     @Override
-    public PageResponse<ProductResponse> getAdminProducts(
-            String search, Long categoryId, Long brandId, Pageable pageable) {
+    public PageResponse<ProductDetailResponse> getAdminProducts(
+        String search, Long categoryId, Long brandId, Pageable pageable) {
 
         // 1. Para el Admin NO usamos isActive(), permitiendo ver completamente el catálogo.
         Specification<ProductEntity> specs = Specification.unrestricted();
         specs = specs.and(ProductSpecification.hasSearch(search))
-                .and(ProductSpecification.hasCategory(categoryId))
-                .and(ProductSpecification.hasBrand(brandId));
+            .and(ProductSpecification.hasCategory(categoryId))
+            .and(ProductSpecification.hasBrand(brandId));
 
         Page<ProductEntity> productPage = productRepository.findAll(specs, pageable);
 
-        // 2. Devolvemos ProductResponse (Completo) para que el admin gestione stock y estados.
+        // 2. Devolvemos ProductDetailResponse (Completo) para que el admin gestione stock y estados.
         return new PageResponse<>(
-                productPage.getContent().stream().map(productMapper::toResponse).toList(),
-                productPage.getNumber(),
-                productPage.getSize(),
-                productPage.getTotalElements(),
-                productPage.getTotalPages(),
-                productPage.isLast()
+            productPage.getContent().stream().map(productMapper::toResponse).toList(),
+            productPage.getNumber(),
+            productPage.getSize(),
+            productPage.getTotalElements(),
+            productPage.getTotalPages(),
+            productPage.isLast()
         );
     }
 
@@ -161,7 +182,7 @@ public class ProductServiceImpl implements IProductService {
     @Transactional
     public void updateStatus(Long id, ProductStatusRequest request) {
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
+            .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
         product.setStatus(request.status());
         // No necesitamos llamar a save() explícitamente gracias a @Transactional
         // y al estado 'Managed' de JPA.

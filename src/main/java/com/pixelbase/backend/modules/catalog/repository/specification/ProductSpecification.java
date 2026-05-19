@@ -27,10 +27,11 @@ public class ProductSpecification {
             // Convertimos a minúsculas para una búsqueda insensible a mayúsculas
             String pattern = "%" + text.toLowerCase() + "%";
 
-            // Genera: (LOWER(name) LIKE %text% OR LOWER(sku) LIKE %text%)
+            // Genera: (LOWER(name) LIKE %text% OR LOWER(sku) LIKE %text%...)
             return cb.or(
-                    cb.like(cb.lower(root.get("name")), pattern),
-                    cb.like(cb.lower(root.get("sku")), pattern)
+                cb.like(cb.lower(root.get("name")), pattern),
+                cb.like(cb.lower(root.get("sku")), pattern),
+                cb.like(cb.lower(root.get("partNumber")), pattern)
             );
         };
     }
@@ -70,9 +71,9 @@ public class ProductSpecification {
     }
 
     /**
-     * Filtra solo productos con estado ACTIVE (Regla esencial para el Storefront).
+     * Filtra solo productos con estado ACTIVO (Regla esencial para el Storefront).
      */
     public static Specification<ProductEntity> isActive() {
-        return (root, query, cb) -> cb.equal(root.get("status"), ProductStatus.ACTIVE);
+        return (root, query, cb) -> cb.equal(root.get("status"), ProductStatus.ACTIVO);
     }
 }

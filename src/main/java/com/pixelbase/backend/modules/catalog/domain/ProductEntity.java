@@ -36,12 +36,10 @@ public class ProductEntity extends AuditableEntity {
     @Column(nullable = false, unique = true)
     private String slug;
 
-    @Builder.Default
-    private Integer stock = 0;
+    private Integer stock;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private ProductStatus status = ProductStatus.ACTIVE;
+    private ProductStatus status;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -53,6 +51,9 @@ public class ProductEntity extends AuditableEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> specifications;
+
+    @Column(name = "part_number", unique = true)
+    private String partNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id", nullable = false)
@@ -72,5 +73,15 @@ public class ProductEntity extends AuditableEntity {
         }
         this.images.add(image);
         image.setProduct(this); // Sincroniza el lado "many"
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.status == null) {
+            this.status = ProductStatus.ACTIVO;
+        }
+        if (this.stock == null) {
+            this.stock = 0;
+        }
     }
 }

@@ -7,33 +7,34 @@ import java.util.List;
 import java.util.Map;
 
 public record ProductRequest(
-        @NotBlank(message = "El nombre del producto es obligatorio")
-        @Size(max = 255, message = "El nombre no puede superar los 255 caracteres")
-        String name,
+    @NotBlank(message = "El nombre del producto es obligatorio")
+    @Size(max = 255, message = "El nombre no puede superar los 255 caracteres")
+    String name,
 
-        @NotBlank(message = "El SKU es obligatorio para el inventario")
-        String sku,
+    @NotBlank(message = "La descripción es obligatoria")
+    String description,
 
-        String description,
+    @NotNull(message = "El precio es obligatorio")
+    @Positive(message = "El precio debe ser mayor a cero")
+    BigDecimal price,
 
-        @NotNull(message = "El precio es obligatorio")
-        @Positive(message = "El precio debe ser mayor a cero")
-        BigDecimal price,
+    BigDecimal originalPrice,
 
-        BigDecimal originalPrice,
+    @NotNull(message = "El stock inicial es obligatorio")
+    @Min(value = 0, message = "El stock no puede ser negativo")
+    Integer stock,
 
-        @NotNull(message = "El stock inicial es obligatorio")
-        @Min(value = 0, message = "El stock no puede ser negativo")
-        Integer stock,
+    @NotBlank(message = "El número de parte es obligatorio")
+    String partNumber,
 
-        @NotNull(message = "La marca es obligatoria")
-        Long brandId,
+    @NotNull(message = "La marca es obligatoria")
+    Long brandId,
 
-        @NotNull(message = "La categoría es obligatoria")
-        Long categoryId,
+    @NotNull(message = "La categoría es obligatoria")
+    Long categoryId,
 
-        Map<String, Object> specifications, // El JSONB de hardware
+    Map<String, Object> specifications, // El JSONB de hardware
 
-        List<ProductImageRequest> images
+    List<ProductImageRequest> images
 ) {
 }
