@@ -14,10 +14,19 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
     Optional<CategoryEntity> findBySlug(String slug);
 
-    @Query("SELECT c FROM CategoryEntity c LEFT JOIN FETCH c.subCategories WHERE c.slug = :slug")
+    @Query("""
+        SELECT c FROM CategoryEntity c
+        LEFT JOIN FETCH c.subCategories
+        WHERE c.slug = :slug
+        """)
     Optional<CategoryEntity> findBySlugWithChildren(@Param("slug") String slug);
 
-    @Query("SELECT DISTINCT c FROM CategoryEntity c LEFT JOIN FETCH c.subCategories WHERE c.parent IS NULL")
+    @Query("""
+        SELECT DISTINCT c FROM CategoryEntity c
+        LEFT JOIN FETCH c.subCategories
+        WHERE c.parent IS NULL
+        ORDER BY c.name ASC
+        """)
     List<CategoryEntity> findAllWithChildren();
 
     boolean existsBySlug(String slug);
@@ -25,6 +34,8 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
     boolean existsByParentId(Long parentId);
 
     long countByParentId(Long parentId);
+
+    Optional<CategoryEntity> findByNameIgnoreCase(String name);
 
     @Query("SELECT COUNT(p) > 0 FROM ProductEntity p WHERE p.category.id = :categoryId")
     boolean hasProducts(@Param("categoryId") Long categoryId);

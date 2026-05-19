@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/categories")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Catalog - Admin - Categories",
+@Tag(name = "Catalogo - Admin - Categorías",
     description = "Panel de gestión de categorías")
 public class AdminCategoryController {
 
@@ -93,7 +93,7 @@ public class AdminCategoryController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar categoría existente",
-        description = "Modifica las propiedades de una categoría por su ID.")
+        description = "Modifica una categoría por su ID y regenera el slug si cambia de nombre.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",

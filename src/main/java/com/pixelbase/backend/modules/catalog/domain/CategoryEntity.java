@@ -30,5 +30,6 @@ public class CategoryEntity extends AuditableEntity {
     private CategoryEntity parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OrderBy("name ASC")
     private List<CategoryEntity> subCategories;
 }

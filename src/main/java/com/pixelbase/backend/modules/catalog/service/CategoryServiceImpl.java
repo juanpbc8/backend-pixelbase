@@ -24,8 +24,8 @@ public class CategoryServiceImpl implements ICategoryService {
     private final CategoryMapper categoryMapper;
 
     /**
-     * Obtiene el árbol completo de categorías (con sus hijos) optimizado mediante JOIN FETCH
-     * para evitar N+1 queries.
+     * Obtiene el árbol completo de categorías con sus hijos para alimentar la
+     * navegación pública y evitar el problema de N+1 consultas.
      */
     @Override
     public List<CategoryResponse> getCategoryTree() {
@@ -35,10 +35,10 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * Recupera una categoría (y sus subcategorías) a partir de su slug.
+     * Recupera una categoría y sus subcategorías a partir de su slug público.
      *
      * @param slug identificador legible de la categoría
-     * @throws ResourceNotFoundException si no existe una categoría con ese slug
+     * @throws ResourceNotFoundException cuando no existe una categoría con ese slug
      */
     @Override
     public CategoryResponse getBySlug(String slug) {
@@ -53,19 +53,16 @@ public class CategoryServiceImpl implements ICategoryService {
      * Recupera una categoría por su identificador numérico.
      *
      * @param id identificador de la categoría
-     * @throws ResourceNotFoundException si no existe una categoría con ese id
+     * @throws ResourceNotFoundException cuando no existe una categoría con ese identificador
      */
     @Override
     public CategoryResponse getById(Long id) {
-        return categoryMapper.toResponse(categoryRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format(
-                "No existe una categoría registrada con ID %d.",
-                id))));
+        return categoryMapper.toResponse(findByIdOrThrow(id));
     }
 
     /**
-     * Obtiene la lista de categorías con la estructura utilizada por la vista de administración.
+     * Obtiene la lista plana de categorías utilizada por la vista de
+     * administración.
      */
     @Override
     public List<CategoryAdminTableResponse> getAdminTable() {
@@ -73,24 +70,22 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * Crea una nueva categoría a partir de la petición proporcionada.
-     * Genera el slug automáticamente a partir del nombre y válida su unicidad.
-     * Si se especifica una categoría padre, verifica que exista y que sea válida
-     * según las reglas de profundidad y asociación de productos.
+     * Crea una nueva categoría, genera su slug automáticamente y válida la
+     * unicidad junto con las reglas de jerarquía.
      *
      * @param request datos de la categoría a crear
-     * @throws ConflictException         si el slug generado ya existe en otra categoría
-     * @throws ResourceNotFoundException si la categoría padre indicada no existe
-     * @throws BadRequestException       si la relación padre/hijo viola las reglas de negocio
+     * @throws ConflictException         cuando el nombre o el slug ya pertenecen a otra categoría registrada
+     * @throws ResourceNotFoundException cuando la categoría padre indicada no existe
+     * @throws BadRequestException       cuando la relación padre/hijo viola las reglas de negocio
      */
     @Override
     @Transactional
     public CategoryResponse create(CategoryRequest request) {
         String generatedSlug = SlugUtil.toSlug(request.name());
-        validateSlugUniqueness(generatedSlug, null);
+        validateCategoryUniqueness(request.name(), generatedSlug, null);
 
         CategoryEntity category = categoryMapper.toEntity(request);
-        category.setSlug(generatedSlug); // Slug automático
+        category.setSlug(generatedSlug);
 
         if (request.parentId() != null) {
             CategoryEntity parent = categoryRepository.findById(request.parentId())
@@ -106,28 +101,22 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * Actualiza una categoría existente identificada por su id con los nuevos datos.
-     * <p>
-     * Genera y valida el slug resultante; permite reasignar la categoría padre o
-     * eliminarlo. Se comprueba la existencia del recurso y la validez de la nueva
-     * jerarquía (profundidad y no asignación a descendientes).
+     * Actualiza una categoría existente, recalcula el slug cuando cambie el
+     * nombre y válida la jerarquía resultante.
      *
      * @param id      identificador de la categoría a actualizar
      * @param request nuevos datos de la categoría
-     * @throws ResourceNotFoundException si no existe la categoría a actualizar o el padre indicado
-     * @throws ConflictException         si el slug generado ya pertenece a otra categoría
-     * @throws BadRequestException       si la nueva jerarquía viola las reglas de negocio
+     * @throws ResourceNotFoundException cuando no existe la categoría a actualizar o el padre indicado
+     * @throws ConflictException         cuando el nombre o el slug colisionan con otra categoría registrada
+     * @throws BadRequestException       cuando la nueva jerarquía viola las reglas de negocio
      */
     @Override
     @Transactional
     public CategoryResponse update(Long id, CategoryRequest request) {
-        CategoryEntity category = categoryRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format(
-                "No existe una categoría registrada con ID %d.", id
-            )));
+        CategoryEntity category = findByIdOrThrow(id);
 
         String generatedSlug = SlugUtil.toSlug(request.name());
-        validateSlugUniqueness(generatedSlug, id);
+        validateCategoryUniqueness(request.name(), generatedSlug, id);
 
         if (request.parentId() == null) {
             category.setParent(null);
@@ -143,27 +132,24 @@ public class CategoryServiceImpl implements ICategoryService {
             category.setParent(parent);
         }
 
-        category.setName(request.name());
+        categoryMapper.updateEntityFromRequest(request, category);
         category.setSlug(generatedSlug);
 
         return categoryMapper.toResponse(category);
     }
 
     /**
-     * Elimina la categoría identificada por id después de validar que no tenga
-     * subcategorías activas ni productos asignados directamente.
+     * Elimina una categoría solo si no tiene subcategorías activas ni productos
+     * asignados directamente.
      *
      * @param id identificador de la categoría a eliminar
-     * @throws ResourceNotFoundException si no existe la categoría
-     * @throws BadRequestException       si la categoría tiene subcategorías o productos asignados
+     * @throws ResourceNotFoundException cuando no existe la categoría
+     * @throws BadRequestException       cuando la categoría tiene subcategorías o productos asignados
      */
     @Override
     @Transactional
     public void delete(Long id) {
-        CategoryEntity category = categoryRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format(
-                "No existe una categoría registrada con ID %d.", id
-            )));
+        CategoryEntity category = findByIdOrThrow(id);
 
         if (categoryRepository.existsByParentId(id)) {
             long subCategoryCount = categoryRepository.countByParentId(id);
@@ -191,16 +177,13 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * Válida que una categoría padre sea adecuada para asociarla como padre de la
-     * categoría indicada. Comprueba que la asignación no exceda la profundidad
-     * máxima permitida y que el padre no tenga productos asignados que impidan
-     * la creación de subcategorías.
+     * Valida que una categoría padre sea adecuada para asociarla como padre de
+     * la categoría indicada.
      *
      * @param category categoría que se va a asociar como hija
      * @param parent   categoría candidata a padre
-     * @throws BadRequestException si la nueva jerarquía supera la profundidad
-     *                             máxima o si el padre ya tiene productos
-     *                             asociados
+     * @throws BadRequestException cuando la jerarquía supera la profundidad máxima
+     *                             o el padre ya tiene productos asociados
      */
     private void validateParentForChild(CategoryEntity category, CategoryEntity parent) {
         int parentLevel = resolveLevel(parent);
@@ -234,11 +217,10 @@ public class CategoryServiceImpl implements ICategoryService {
 
     /**
      * Calcula de forma recursiva la altura máxima del subárbol descendiente de
-     * la categoría proporcionada. Devuelve 0 si no tiene subcategorías.
+     * la categoría proporcionada.
      *
      * @param category categoría raíz del subárbol a calcular
      */
-    // Auxiliar recursivo de soporte para calcular la altura del árbol descendiente
     private int calculateSubtreeHeight(CategoryEntity category) {
         if (category.getSubCategories() == null || category.getSubCategories().isEmpty()) {
             return 0;
@@ -252,12 +234,12 @@ public class CategoryServiceImpl implements ICategoryService {
 
     /**
      * Verifica que la nueva categoría padre no sea la misma categoría ni un
-     * descendiente de ésta, evitando ciclos en la jerarquía.
+     * descendiente suyo para evitar ciclos en la jerarquía.
      *
-     * @param category  categoría que se está moviendo/actualizando
+     * @param category  categoría que se está moviendo o actualizando
      * @param newParent nueva categoría padre propuesta
-     * @throws BadRequestException si se intenta asignar la categoría como su
-     *                             propio padre o a uno de sus descendientes
+     * @throws BadRequestException cuando se intenta asignar la categoría como
+     *                             su propio padre o a uno de sus descendientes
      */
     private void validateParentNotSelfOrDescendant(CategoryEntity category, CategoryEntity newParent) {
         if (category.getId().equals(newParent.getId())) {
@@ -284,8 +266,7 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * Resuelve el nivel (profundidad) de la categoría dentro del árbol. Las
-     * raíces tienen nivel 1; cada nivel de anidamiento aumenta el contador en 1.
+     * Resuelve el nivel de profundidad de la categoría dentro del árbol.
      *
      * @param category categoría cuya profundidad se desea conocer
      */
@@ -300,32 +281,47 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * Válida la unicidad del slug entre las categorías. Si currentId es nulo se
-     * verifica que ningún registro existente use el slug; si no es nulo se
-     * permite que el registro con el mismo id conserve el slug.
+     * Válida de manera unificada la integridad del nombre y del slug para
+     * evitar duplicados y conservar mensajes de conflicto legibles.
      *
-     * @param slug      slug a validar
-     * @param currentId id del registro actual (puede ser nulo para nuevas
-     *                  categorías)
-     * @throws ConflictException si existe otra categoría con el mismo slug
+     * @param name      nombre legible recibido en la petición
+     * @param slug      slug generado o solicitado para la categoría
+     * @param currentId identificador actual de la categoría; es nulo durante la creación
+     * @throws ConflictException cuando el nombre o el slug ya pertenecen a otra categoría registrada
      */
-    private void validateSlugUniqueness(String slug, Long currentId) {
-        if (currentId == null) {
-            if (categoryRepository.existsBySlug(slug)) {
+    private void validateCategoryUniqueness(String name, String slug, Long currentId) {
+        // 1. Control preventivo por nombre exacto (Case Insensitive)
+        categoryRepository.findByNameIgnoreCase(name).ifPresent(existing -> {
+            if (!existing.getId().equals(currentId)) {
                 throw new ConflictException(String.format(
-                    "Ya existe una categoría registrada con el nombre o slug idéntico a '%s'.", slug
+                    "Ya existe una categoría registrada con el nombre '%s'.",
+                    name
                 ));
             }
-            return;
-        }
+        });
 
-        CategoryEntity existing = categoryRepository.findBySlug(slug)
-            .orElse(null);
+        // 2. Control preventivo de colisión por normalización de URL (Slug)
+        categoryRepository.findBySlug(slug).ifPresent(existing -> {
+            if (!existing.getId().equals(currentId)) {
+                throw new ConflictException(String.format(
+                    "Ya existe una categoría registrada con un nombre equivalente o similar a '%s'.",
+                    name
+                ));
+            }
+        });
+    }
 
-        if (existing != null && !existing.getId().equals(currentId)) {
-            throw new ConflictException(String.format(
-                "Ya existe una categoría registrada con el nombre o slug idéntico a '%s'.", slug
-            ));
-        }
+    /**
+     * Busca una categoría por identificador y falla de inmediato si no existe.
+     *
+     * @param id identificador numérico de la categoría
+     * @throws ResourceNotFoundException cuando el registro no existe
+     */
+    private CategoryEntity findByIdOrThrow(Long id) {
+        return categoryRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(String.format(
+                "No existe una categoría registrada con ID %d.",
+                id
+            )));
     }
 }

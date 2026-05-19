@@ -6,6 +6,7 @@ import com.pixelbase.backend.modules.catalog.dto.request.CategoryRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.CategoryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(config = GlobalMapperConfig.class)
 public interface CategoryMapper {
@@ -19,4 +20,6 @@ public interface CategoryMapper {
      */
     @Mapping(target = "parent", ignore = true)
     CategoryEntity toEntity(CategoryRequest request);
+
+    void updateEntityFromRequest(CategoryRequest request, @MappingTarget CategoryEntity entity);
 }
