@@ -14,17 +14,26 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
     Optional<CategoryEntity> findBySlug(String slug);
 
-    @Query("SELECT c FROM CategoryEntity c LEFT JOIN FETCH c.subCategories WHERE c.slug = :slug")
+    @Query("""
+        SELECT c FROM CategoryEntity c
+        LEFT JOIN FETCH c.subCategories
+        WHERE c.slug = :slug
+        """)
     Optional<CategoryEntity> findBySlugWithChildren(@Param("slug") String slug);
 
-    @Query("SELECT DISTINCT c FROM CategoryEntity c LEFT JOIN FETCH c.subCategories WHERE c.parent IS NULL")
+    @Query("""
+        SELECT DISTINCT c FROM CategoryEntity c
+        LEFT JOIN FETCH c.subCategories
+        WHERE c.parent IS NULL
+        ORDER BY c.name ASC
+        """)
     List<CategoryEntity> findAllWithChildren();
-
-    boolean existsBySlug(String slug);
 
     boolean existsByParentId(Long parentId);
 
     long countByParentId(Long parentId);
+
+    Optional<CategoryEntity> findByNameIgnoreCase(String name);
 
     @Query("SELECT COUNT(p) > 0 FROM ProductEntity p WHERE p.category.id = :categoryId")
     boolean hasProducts(@Param("categoryId") Long categoryId);
@@ -43,12 +52,13 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
                 WHEN parent.parent.id IS NULL THEN 2
                 ELSE 3
             END,
-            COUNT(p.id)
+            COUNT(p.id),
+            c.createdAt
         )
         FROM CategoryEntity c
         LEFT JOIN c.parent parent
         LEFT JOIN ProductEntity p ON p.category.id = c.id
-        GROUP BY c.id, c.name, c.slug, parent.name, parent.id, parent.parent.id
+        GROUP BY c.id, c.name, c.slug, parent.name, parent.id, parent.parent.id, c.createdAt
         ORDER BY c.name ASC
         """)
     List<CategoryAdminTableResponse> findAdminTable();

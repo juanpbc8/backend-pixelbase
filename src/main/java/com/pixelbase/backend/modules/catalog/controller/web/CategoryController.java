@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/public/categories")
 @RequiredArgsConstructor
-@Tag(name = "Catalog - Storefront",
+@Tag(name = "Catalogo - Storefront - Categorías",
     description = "Endpoints públicos para navegación de categorías")
 public class CategoryController {
 
