@@ -28,11 +28,12 @@ public interface BrandRepository extends JpaRepository<BrandEntity, Long> {
             b.name,
             b.slug,
             b.logoUrl,
-            COUNT(p)
+            COUNT(p),
+            b.createdAt
         )
         FROM BrandEntity b
         LEFT JOIN ProductEntity p ON p.brand = b
-        GROUP BY b.id, b.name, b.slug, b.logoUrl
+        GROUP BY b.id, b.name, b.slug, b.logoUrl, b.createdAt
         ORDER BY b.name ASC
         """)
     List<BrandAdminTableResponse> findAllAdminTable();

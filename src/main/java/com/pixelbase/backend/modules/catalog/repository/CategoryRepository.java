@@ -52,12 +52,13 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
                 WHEN parent.parent.id IS NULL THEN 2
                 ELSE 3
             END,
-            COUNT(p.id)
+            COUNT(p.id),
+            c.createdAt
         )
         FROM CategoryEntity c
         LEFT JOIN c.parent parent
         LEFT JOIN ProductEntity p ON p.category.id = c.id
-        GROUP BY c.id, c.name, c.slug, parent.name, parent.id, parent.parent.id
+        GROUP BY c.id, c.name, c.slug, parent.name, parent.id, parent.parent.id, c.createdAt
         ORDER BY c.name ASC
         """)
     List<CategoryAdminTableResponse> findAdminTable();
