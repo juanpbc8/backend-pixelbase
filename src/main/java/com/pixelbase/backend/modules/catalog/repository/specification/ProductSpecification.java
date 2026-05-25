@@ -17,7 +17,7 @@ public class ProductSpecification {
     }
 
     /**
-     * Filtra productos por un texto de búsqueda que coincida con el nombre o el SKU.
+     * Filtra productos por un texto de búsqueda que coincida con el nombre, SKU o partNumber.
      *
      * @param text Texto a buscar (ej: "logitech" o "LAP-ASUS-001")
      */
