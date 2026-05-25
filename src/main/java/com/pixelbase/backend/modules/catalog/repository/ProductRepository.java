@@ -1,22 +1,36 @@
 package com.pixelbase.backend.modules.catalog.repository;
 
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
-import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long>,
-        JpaSpecificationExecutor<ProductEntity> {
+    JpaSpecificationExecutor<ProductEntity> {
 
     Optional<ProductEntity> findBySlug(String slug);
 
-    // Para el Storefront: Solo productos activos
-    List<ProductEntity> findByStatus(ProductStatus status);
+    Optional<ProductEntity> findByNameIgnoreCase(String name);
 
-    boolean existsBySku(String sku);
+    Optional<ProductEntity> findByPartNumber(String partNumber);
+
+    @Override
+    @NonNull
+    @EntityGraph(attributePaths = {
+        "brand",
+        "category"
+    })
+    Page<ProductEntity> findAll(Specification<ProductEntity> spec, @NonNull Pageable pageable);
+
+    @Query(value = "SELECT nextval('product_sku_seq')", nativeQuery = true)
+    Long getNextSkuSequence();
 }

@@ -24,10 +24,10 @@ public class ProductEntity extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 6)
     private String sku;
 
     @Column(columnDefinition = "TEXT")
@@ -36,12 +36,12 @@ public class ProductEntity extends AuditableEntity {
     @Column(nullable = false, unique = true)
     private String slug;
 
-    @Builder.Default
-    private Integer stock = 0;
+    @Column(nullable = false)
+    private Integer stock;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private ProductStatus status = ProductStatus.ACTIVE;
+    @Column(nullable = false)
+    private ProductStatus status;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -54,6 +54,9 @@ public class ProductEntity extends AuditableEntity {
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> specifications;
 
+    @Column(name = "part_number", unique = true)
+    private String partNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id", nullable = false)
     private BrandEntity brand;
@@ -64,13 +67,6 @@ public class ProductEntity extends AuditableEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")
-    private List<ProductImageEntity> images;
-
-    public void addImage(ProductImageEntity image) {
-        if (images == null) {
-            images = new ArrayList<>();
-        }
-        this.images.add(image);
-        image.setProduct(this); // Sincroniza el lado "many"
-    }
+    @Builder.Default
+    private List<ProductImageEntity> images = new ArrayList<>();
 }
