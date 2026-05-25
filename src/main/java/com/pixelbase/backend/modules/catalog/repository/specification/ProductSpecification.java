@@ -8,9 +8,14 @@ import java.math.BigDecimal;
 
 /**
  * Clase de utilidad para construir consultas dinámicas sobre la entidad Product.
- * Cada método devuelve una "Specification", que es una pieza de lógica de filtrado.
+ * Cada method devuelve una "Specification", que es una pieza de lógica de filtrado.
  */
 public class ProductSpecification {
+
+    private ProductSpecification() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     /**
      * Filtra productos por un texto de búsqueda que coincida con el nombre o el SKU.
      *

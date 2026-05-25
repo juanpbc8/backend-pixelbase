@@ -24,10 +24,10 @@ public class ProductEntity extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 6)
     private String sku;
 
     @Column(columnDefinition = "TEXT")
@@ -36,9 +36,11 @@ public class ProductEntity extends AuditableEntity {
     @Column(nullable = false, unique = true)
     private String slug;
 
+    @Column(nullable = false)
     private Integer stock;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ProductStatus status;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -65,23 +67,6 @@ public class ProductEntity extends AuditableEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")
-    private List<ProductImageEntity> images;
-
-    public void addImage(ProductImageEntity image) {
-        if (images == null) {
-            images = new ArrayList<>();
-        }
-        this.images.add(image);
-        image.setProduct(this); // Sincroniza el lado "many"
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        if (this.status == null) {
-            this.status = ProductStatus.ACTIVO;
-        }
-        if (this.stock == null) {
-            this.stock = 0;
-        }
-    }
+    @Builder.Default
+    private List<ProductImageEntity> images = new ArrayList<>();
 }

@@ -1,7 +1,7 @@
 package com.pixelbase.backend.modules.catalog.seed;
 
 import com.pixelbase.backend.common.seed.DataSeeder;
-import com.pixelbase.backend.modules.catalog.dto.request.ProductImageRequest;
+import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
 import com.pixelbase.backend.modules.catalog.repository.BrandRepository;
 import com.pixelbase.backend.modules.catalog.repository.CategoryRepository;
@@ -120,7 +120,12 @@ public class ProductSeeder implements DataSeeder {
         createProduct("Audífonos Razer BlackShark V2 Pro White",
             "Claridad de voz inigualable para comunicación táctica.", 599.00, 650.00, 10,
             "razer", "audifonos",
-            Map.of("microfono", "HyperClear Super Wideband", "bateria", "70h", "controladores", "TriForce 50mm"),
+            Map.of("microfono",
+                "HyperClear Super Wideband",
+                "bateria",
+                "70h",
+                "controladores",
+                "TriForce 50mm"),
             "RZ04-04530200-R3U1");
 
         createProduct("RAM Kingston FURY Beast 16GB DDR5",
@@ -146,8 +151,10 @@ public class ProductSeeder implements DataSeeder {
             name, desc,
             BigDecimal.valueOf(price),
             originalPrice != null ? BigDecimal.valueOf(originalPrice) : null,
-            stock, partNumber, brandId, catId, specs,
-            List.of(new ProductImageRequest("https://res.cloudinary.com/pixelbase/placeholder.png", name, 0))
+            stock, partNumber, ProductStatus.ACTIVO, brandId, catId, specs,
+            List.of(new ProductRequest.ProductImageRequest(
+                "https://res.cloudinary.com/pixelbase/placeholder.png",
+                null))
         );
 
         productService.create(request);

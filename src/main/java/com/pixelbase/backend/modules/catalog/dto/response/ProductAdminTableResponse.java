@@ -14,6 +14,7 @@ public record ProductAdminTableResponse(
     ProductStatus status,
     String brandName,
     String categoryName,
-    LocalDateTime createdAt
+    LocalDateTime updatedAt,
+    String updatedBy
 ) {
 }
