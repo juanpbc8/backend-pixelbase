@@ -20,6 +20,11 @@ CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:5173
 JWT_SECRET=ClaveSecretaDePruebasLocalesPixelbaseDeAlMenos32Bytes2026!
 JWT_EXPIRATION=86400000
 
+# Configuración de Cloudinary para almacenamiento de imágenes
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
 # --------------------------------------------------------------------
 # PROPIEDADES EXCLUSIVAS DE DEBUGGING (Solo se activan en modo DEV)
 # --------------------------------------------------------------------
