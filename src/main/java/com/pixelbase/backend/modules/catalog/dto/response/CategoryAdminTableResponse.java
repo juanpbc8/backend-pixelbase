@@ -1,6 +1,6 @@
 package com.pixelbase.backend.modules.catalog.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record CategoryAdminTableResponse(
     Long id,
@@ -9,6 +9,6 @@ public record CategoryAdminTableResponse(
     String parentName,
     Integer level,     // Campo calculado con base en la jerarquía (1, 2 o 3)
     Long productCount, // Super útil para saber cuántos productos quedarían huérfanos si se altera
-    LocalDateTime createdAt
+    Instant createdAt
 ) {
 }

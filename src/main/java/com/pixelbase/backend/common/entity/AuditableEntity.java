@@ -11,7 +11,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -20,11 +20,11 @@ import java.time.LocalDateTime;
 public abstract class AuditableEntity {
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    protected LocalDateTime createdAt;
+    protected Instant createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    protected LocalDateTime updatedAt;
+    protected Instant updatedAt;
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)

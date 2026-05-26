@@ -10,7 +10,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException authException) throws IOException {
 
         var apiError = new ApiError(
-            LocalDateTime.now(),
+            Instant.now(),
             HttpServletResponse.SC_UNAUTHORIZED,
             "No autenticado. Debe proporcionar credenciales válidas en la cabecera Authorization para " +
                 "acceder a este recurso.",

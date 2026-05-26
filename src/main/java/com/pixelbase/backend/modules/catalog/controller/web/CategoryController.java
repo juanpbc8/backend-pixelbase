@@ -1,11 +1,8 @@
 package com.pixelbase.backend.modules.catalog.controller.web;
 
-import com.pixelbase.backend.common.exception.ApiError;
 import com.pixelbase.backend.modules.catalog.dto.response.CategoryResponse;
 import com.pixelbase.backend.modules.catalog.service.ICategoryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,8 +30,7 @@ public class CategoryController {
             "utiliza para renderizar los menús de navegación global y vitrinas públicas de hardware.")
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Operación exitosa.")
+            responseCode = "200", description = "Operación exitosa.")
     })
     public ResponseEntity<List<CategoryResponse>> getCategoryTree() {
         return ResponseEntity.ok(categoryService.getCategoryTree());
@@ -47,12 +43,7 @@ public class CategoryController {
             "generar las migas de pan (breadcrumbs).")
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Operación exitosa"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La categoría solicitada no existe en el sistema",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            responseCode = "200", description = "Operación exitosa"),
     })
     public ResponseEntity<CategoryResponse> getBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(categoryService.getBySlug(slug));

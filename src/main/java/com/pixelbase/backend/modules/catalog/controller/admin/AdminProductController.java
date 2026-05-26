@@ -1,18 +1,14 @@
 package com.pixelbase.backend.modules.catalog.controller.admin;
 
 import com.pixelbase.backend.common.dto.PageResponse;
-import com.pixelbase.backend.common.exception.ApiError;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductStatusRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductAdminDetailResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductAdminTableResponse;
 import com.pixelbase.backend.modules.catalog.service.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +25,6 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/v1/admin/products")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Catalogo - Admin - Productos",
     description = "Panel de gestión de inventario y productos")
 public class AdminProductController {
@@ -62,10 +57,6 @@ public class AdminProductController {
         @ApiResponse(
             responseCode = "200",
             description = "Operación exitosa"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "El producto solicitado no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<ProductAdminDetailResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getAdminById(id));
@@ -79,13 +70,8 @@ public class AdminProductController {
             responseCode = "201",
             description = "Producto creado exitosamente"),
         @ApiResponse(
-            responseCode = "400",
-            description = "La petición contiene campos inválidos",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
             responseCode = "409",
-            description = "Ya existe un producto con el mismo nombre o número de parte",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            description = "Ya existe un producto con el mismo nombre, slug o número de parte.")
     })
     public ResponseEntity<ProductAdminDetailResponse> create(@Valid @RequestBody ProductRequest request) {
         ProductAdminDetailResponse created = productService.create(request);
@@ -104,17 +90,8 @@ public class AdminProductController {
             responseCode = "200",
             description = "Operación exitosa"),
         @ApiResponse(
-            responseCode = "400",
-            description = "La petición contiene campos inválidos",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "El producto solicitado no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
             responseCode = "409",
-            description = "Ya existe un producto con el mismo nombre o número de parte",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            description = "Ya existe un producto con el mismo nombre, slug o número de parte.")
     })
     public ResponseEntity<ProductAdminDetailResponse> update(
         @PathVariable Long id,
@@ -132,13 +109,8 @@ public class AdminProductController {
             responseCode = "204",
             description = "Estado actualizado"),
         @ApiResponse(
-            responseCode = "400",
-            description = "La petición contiene campos inválidos",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "El producto solicitado no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            responseCode = "409",
+            description = "No se puede marcar como ACTIVO un producto sin stock disponible.")
     })
     public ResponseEntity<Void> updateStatus(
         @PathVariable Long id,

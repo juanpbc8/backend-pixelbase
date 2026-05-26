@@ -140,7 +140,7 @@ public class BrandServiceImpl implements IBrandService {
 
         // Regla de Negocio: Candado de integridad relacional en cascada
         if (productCount > 0) {
-            throw new BadRequestException(String.format(
+            throw new ConflictException(String.format(
                 "No se puede eliminar la marca '%s' (ID: %d) porque tiene %d productos asignados " +
                     "activos en el inventario.",
                 brand.getName(),
@@ -182,7 +182,7 @@ public class BrandServiceImpl implements IBrandService {
         brandRepository.findByNameIgnoreCase(name).ifPresent(existing -> {
             if (!Objects.equals(existing.getId(), currentId)) {
                 throw new ConflictException(String.format(
-                    "Ya existe una marca registrada con el nombre o slug '%s'.",
+                    "Ya existe una marca registrada con el nombre '%s'.",
                     name
                 ));
             }
@@ -192,7 +192,7 @@ public class BrandServiceImpl implements IBrandService {
         brandRepository.findBySlug(slug).ifPresent(existing -> {
             if (!Objects.equals(existing.getId(), currentId)) {
                 throw new ConflictException(String.format(
-                    "Ya existe una marca registrada con el nombre o slug '%s'.",
+                    "Ya existe una marca registrada con un nombre equivalente o similar a '%s'.",
                     slug
                 ));
             }

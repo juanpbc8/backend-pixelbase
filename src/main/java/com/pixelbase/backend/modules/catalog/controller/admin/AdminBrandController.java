@@ -1,16 +1,12 @@
 package com.pixelbase.backend.modules.catalog.controller.admin;
 
-import com.pixelbase.backend.common.exception.ApiError;
 import com.pixelbase.backend.modules.catalog.dto.request.BrandRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.BrandAdminTableResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.BrandResponse;
 import com.pixelbase.backend.modules.catalog.service.IBrandService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +20,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/brands")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 @Tag(
     name = "Catalogo - Admin - Marcas",
     description = "Panel de gestión de marcas"
@@ -52,11 +47,6 @@ public class AdminBrandController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Operación exitosa."),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La marca con el identificador solicitado no existe.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        )
     })
     public ResponseEntity<BrandResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(brandService.getById(id));
@@ -70,19 +60,8 @@ public class AdminBrandController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Marca creada exitosamente."),
         @ApiResponse(
-            responseCode = "400",
-            description = "La petición es inválida por fallos de validación.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La marca con el identificador solicitado no existe.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
-        @ApiResponse(
             responseCode = "409",
-            description = "Ya existe una marca con el mismo nombre o slug.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
+            description = "Ya existe una marca con el mismo nombre o slug."
         )
     })
     public ResponseEntity<BrandResponse> create(@Valid @RequestBody BrandRequest request) {
@@ -103,19 +82,8 @@ public class AdminBrandController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Operación exitosa."),
         @ApiResponse(
-            responseCode = "400",
-            description = "La petición es inválida por fallos de validación.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La marca con el identificador solicitado no existe.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
-        @ApiResponse(
             responseCode = "409",
-            description = "Ya existe una marca con el mismo nombre o slug.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
+            description = "Ya existe una marca con el mismo nombre o slug."
         )
     })
     public ResponseEntity<BrandResponse> update(
@@ -133,14 +101,8 @@ public class AdminBrandController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Marca eliminada exitosamente."),
         @ApiResponse(
-            responseCode = "400",
-            description = "La marca no puede eliminarse porque tiene productos asignados.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La marca con el identificador solicitado no existe.",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
+            responseCode = "409",
+            description = "La marca no puede eliminarse porque tiene productos activos asociados."
         )
     })
     public ResponseEntity<Void> delete(@PathVariable Long id) {
