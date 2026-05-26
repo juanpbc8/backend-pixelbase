@@ -154,7 +154,7 @@ public class CategoryServiceImpl implements ICategoryService {
 
         if (categoryRepository.existsByParentId(id)) {
             long subCategoryCount = categoryRepository.countByParentId(id);
-            throw new BadRequestException(String.format(
+            throw new ConflictException(String.format(
                 "No se puede eliminar la categoría '%s' (ID: %d) porque tiene %d subcategorías activas " +
                     "asociadas.",
                 category.getName(),
@@ -165,7 +165,7 @@ public class CategoryServiceImpl implements ICategoryService {
 
         if (categoryRepository.hasProducts(id)) {
             long productCount = categoryRepository.countProductsByCategoryId(id);
-            throw new BadRequestException(String.format(
+            throw new ConflictException(String.format(
                 "No se puede eliminar la categoría '%s' (ID: %d) porque contiene %d productos asignados " +
                     "directos en el inventario.",
                 category.getName(),

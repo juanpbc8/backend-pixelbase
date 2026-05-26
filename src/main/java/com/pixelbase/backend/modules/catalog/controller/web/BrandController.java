@@ -1,11 +1,8 @@
 package com.pixelbase.backend.modules.catalog.controller.web;
 
-import com.pixelbase.backend.common.exception.ApiError;
 import com.pixelbase.backend.modules.catalog.dto.response.BrandResponse;
 import com.pixelbase.backend.modules.catalog.service.IBrandService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,8 +33,7 @@ public class BrandController {
     )
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Operación exitosa."
+            responseCode = "200", description = "Operación exitosa."
         )
     })
     public ResponseEntity<List<BrandResponse>> getAll() {
@@ -51,14 +47,8 @@ public class BrandController {
     )
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Operación exitosa"
+            responseCode = "200", description = "Operación exitosa"
         ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La marca solicitada no existe en el sistema",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        )
     })
     public ResponseEntity<BrandResponse> getBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(brandService.getBySlug(slug));

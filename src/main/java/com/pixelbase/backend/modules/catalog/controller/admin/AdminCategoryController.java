@@ -1,16 +1,12 @@
 package com.pixelbase.backend.modules.catalog.controller.admin;
 
-import com.pixelbase.backend.common.exception.ApiError;
 import com.pixelbase.backend.modules.catalog.dto.request.CategoryRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.CategoryAdminTableResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.CategoryResponse;
 import com.pixelbase.backend.modules.catalog.service.ICategoryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +20,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/categories")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Catalogo - Admin - Categorías",
     description = "Panel de gestión de categorías")
 public class AdminCategoryController {
@@ -39,23 +34,15 @@ public class AdminCategoryController {
             responseCode = "201",
             description = "Categoría creada exitosamente"),
         @ApiResponse(
-            responseCode = "400",
-            description = "Petición inválida: Se violó el límite máximo de 3 niveles de profundidad, el " +
-                "padre tiene productos asociados o faltan campos obligatorios",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La categoría padre indicada no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
             responseCode = "409",
-            description = "Conflicto: Ya existe una categoría con un nombre o slug idéntico",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            description = "Ya existe una categoría con el mismo nombre o slug.")
     })
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) {
         CategoryResponse created = categoryService.create(request);
-        URI location =
-            ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(created.id()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(created.id())
+            .toUri();
         return ResponseEntity.created(location).body(created);
     }
 
@@ -82,10 +69,6 @@ public class AdminCategoryController {
         @ApiResponse(
             responseCode = "200",
             description = "OK"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La categoría solicitada no existe en el sistema",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<CategoryResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.getById(id));
@@ -99,18 +82,8 @@ public class AdminCategoryController {
             responseCode = "200",
             description = "OK"),
         @ApiResponse(
-            responseCode = "400",
-            description = "Petición inválida: Excede el límite de 3 niveles, genera ciclos jerárquicos o " +
-                "asigna un padre con productos asociados",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La categoría o la categoría padre no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
             responseCode = "409",
-            description = "Conflicto por nombre duplicado",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            description = "Ya existe una categoría con el mismo nombre o slug.")
     })
     public ResponseEntity<CategoryResponse> update(@PathVariable Long id,
                                                    @Valid @RequestBody CategoryRequest request) {
@@ -125,14 +98,9 @@ public class AdminCategoryController {
             responseCode = "204",
             description = "Categoría eliminada con éxito"),
         @ApiResponse(
-            responseCode = "400",
-            description = "Operación rechazada: La categoría no se puede eliminar porque contiene " +
-                "subcategorías hijas o productos activos asociados",
-            content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "La categoría no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            responseCode = "409",
+            description = "La categoría no se puede eliminar porque tiene subcategorías o productos "
+                + "asociados.")
     })
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);

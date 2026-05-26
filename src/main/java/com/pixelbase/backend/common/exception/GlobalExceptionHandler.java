@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -46,10 +46,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         List<ApiError.ValidationDetail> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> new ApiError.ValidationDetail(error.getField(), error.getDefaultMessage()))
-                .toList();
+            .getFieldErrors()
+            .stream()
+            .map(error -> new ApiError.ValidationDetail(error.getField(), error.getDefaultMessage()))
+            .toList();
 
         return buildResponse(HttpStatus.BAD_REQUEST, "Error de validación en los campos", errors);
     }
@@ -71,17 +71,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         String typeName = ex.getRequiredType() != null
-                ? ex.getRequiredType().getSimpleName()
-                : "desconocido";
+            ? ex.getRequiredType().getSimpleName()
+            : "desconocido";
         String message = String.format("El parámetro '%s' debe ser de tipo %s",
-                ex.getName(), typeName);
+            ex.getName(), typeName);
 
         return buildResponse(HttpStatus.BAD_REQUEST, message, null);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredential(BadCredentialsException ex) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Credenciales inválidas. Por favor, verifica tu email y contraseña.", null);
+        return buildResponse(HttpStatus.UNAUTHORIZED,
+            "Credenciales inválidas. Por favor, verifica tu email y contraseña.",
+            null);
     }
 
     @ExceptionHandler(Exception.class)
@@ -89,12 +91,16 @@ public class GlobalExceptionHandler {
         log.error("Error no controlado capturado: {}", ex.getMessage(), ex);
 
         // Al usuario (y al frontend) solo dale un mensaje genérico
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ha ocurrido un error inesperado en el servidor", null);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+            "Ha ocurrido un error inesperado en el servidor",
+            null);
     }
 
     // Utilitario para no repetir código
-    private ResponseEntity<ApiError> buildResponse(HttpStatus status, String message, List<ApiError.ValidationDetail> errors) {
-        ApiError apiError = new ApiError(LocalDateTime.now(), status.value(), message, errors);
+    private ResponseEntity<ApiError> buildResponse(HttpStatus status,
+                                                   String message,
+                                                   List<ApiError.ValidationDetail> errors) {
+        ApiError apiError = new ApiError(Instant.now(), status.value(), message, errors);
         return new ResponseEntity<>(apiError, status);
     }
 }

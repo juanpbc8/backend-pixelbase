@@ -1,13 +1,10 @@
 package com.pixelbase.backend.modules.catalog.controller.web;
 
 import com.pixelbase.backend.common.dto.PageResponse;
-import com.pixelbase.backend.common.exception.ApiError;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductCardResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductDetailResponse;
 import com.pixelbase.backend.modules.catalog.service.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,8 +32,7 @@ public class ProductController {
         description = "Busca productos activos por nombre, categoría, marca y rango de precio con paginación")
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Operación exitosa")
+            responseCode = "200", description = "Operación exitosa")
     })
     public ResponseEntity<PageResponse<ProductCardResponse>> getProducts(
         @RequestParam(required = false) String search,
@@ -58,12 +54,7 @@ public class ProductController {
         description = "Devuelve la información detallada de un producto para su ficha técnica")
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Operación exitosa"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "El producto solicitado no existe",
-            content = @Content(schema = @Schema(implementation = ApiError.class)))
+            responseCode = "200", description = "Operación exitosa"),
     })
     public ResponseEntity<ProductDetailResponse> getBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(productService.getBySlug(slug));

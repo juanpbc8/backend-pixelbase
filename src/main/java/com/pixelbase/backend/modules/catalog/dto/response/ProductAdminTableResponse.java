@@ -3,7 +3,7 @@ package com.pixelbase.backend.modules.catalog.dto.response;
 import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ProductAdminTableResponse(
     Long id,
@@ -14,7 +14,7 @@ public record ProductAdminTableResponse(
     ProductStatus status,
     String brandName,
     String categoryName,
-    LocalDateTime updatedAt,
+    Instant updatedAt,
     String updatedBy
 ) {
 }

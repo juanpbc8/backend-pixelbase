@@ -1,21 +1,25 @@
 package com.pixelbase.backend.common.config;
 
 import com.pixelbase.backend.common.exception.ApiError;
+import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Map;
 
 @Configuration
 public class SwaggerConfig {
@@ -27,16 +31,15 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         Components components = new Components()
-            .addSecuritySchemes(SECURITY_SCHEME_NAME,
+            .addSecuritySchemes(
+                SECURITY_SCHEME_NAME,
                 new SecurityScheme()
                     .name(SECURITY_SCHEME_NAME)
                     .type(SecurityScheme.Type.HTTP)
                     .scheme("bearer")
                     .bearerFormat("JWT"));
 
-        // Forzamos a Springdoc a registrar la estructura de 'ApiError' en el diccionario global
-        Map<String, Schema> apiErrorSchemas = ModelConverters.getInstance().readAll(ApiError.class);
-        apiErrorSchemas.forEach(components::addSchemas);
+        registerApiErrorSchema(components);
 
         return new OpenAPI()
             .info(new Info()
@@ -51,6 +54,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Public API")
             .pathsToMatch("/api/v1/public/**")
+            .addOpenApiCustomizer(globalErrorCustomizer())
             .build();
     }
 
@@ -59,6 +63,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Auth API")
             .pathsToMatch("/api/v1/auth/**")
+            .addOpenApiCustomizer(globalErrorCustomizer())
             .build();
     }
 
@@ -67,6 +72,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Admin API")
             .pathsToMatch("/api/v1/admin/**")
+            .addOpenApiCustomizer(globalErrorCustomizer())
             .addOpenApiCustomizer(adminSecurityCustomizer())
             .build();
     }
@@ -76,60 +82,141 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Account API")
             .pathsToMatch("/api/v1/account/**")
+            .addOpenApiCustomizer(globalErrorCustomizer())
             .addOpenApiCustomizer(userSecurityCustomizer())
             .build();
     }
 
-    /**
-     * Automatiza la documentación de seguridad y respuestas de error para la sección de Administración.
-     */
+    private OpenApiCustomizer globalErrorCustomizer() {
+        return openApi -> {
+            if (openApi.getPaths() == null) {
+                return;
+            }
+
+            ensureApiErrorSchema(openApi);
+
+            openApi.getPaths().forEach((path, pathItem) -> pathItem.readOperationsMap().forEach(
+                (httpMethod, operation) -> {
+                    addOrMergeErrorResponse(operation, "500", "Error interno del servidor.");
+
+                    if (isBodyMethod(httpMethod)) {
+                        addOrMergeErrorResponse(
+                            operation,
+                            "400",
+                            "La petición contiene campos inválidos, nulos o malformados."
+                        );
+                    }
+
+                    if (path.contains("{") && path.contains("}")) {
+                        addOrMergeErrorResponse(
+                            operation,
+                            "404",
+                            "El recurso solicitado no fue encontrado en el sistema."
+                        );
+                    }
+                }));
+        };
+    }
+
     private OpenApiCustomizer adminSecurityCustomizer() {
         return openApi -> {
-            if (openApi.getPaths() == null) return;
+            if (openApi.getPaths() == null) {
+                return;
+            }
 
-            openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(
-                operation -> {
-                    operation.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
-
-                    operation.getResponses().addApiResponse("401", createErrorResponse(
-                        "No autenticado. El token JWT es inválido, expiró o no fue proporcionado."
-                    ));
-
-                    operation.getResponses().addApiResponse("403", createErrorResponse(
-                        "Acceso denegado. El usuario está autenticado pero no posee el rol administrativo"
-                    ));
-                }));
+            openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(operation -> {
+                operation.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
+                addOrMergeErrorResponse(
+                    operation,
+                    "401",
+                    "No autenticado. El token JWT es inválido, expiró o no fue proporcionado."
+                );
+                addOrMergeErrorResponse(
+                    operation,
+                    "403",
+                    "Acceso denegado. El usuario está autenticado pero no posee el rol administrativo"
+                );
+            }));
         };
     }
 
-    /**
-     * Automatiza la documentación de seguridad para la sección de cuenta propia del usuario.
-     */
     private OpenApiCustomizer userSecurityCustomizer() {
         return openApi -> {
-            if (openApi.getPaths() == null) return;
+            if (openApi.getPaths() == null) {
+                return;
+            }
 
-            openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(
-                operation -> {
-                    operation.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
-
-                    operation.getResponses().addApiResponse("401", createErrorResponse(
-                        "No autenticado. Debe iniciar sesión con una cuenta válida para gestionar su " +
-                            "información de perfil."
-                    ));
-                }));
+            openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(operation -> {
+                operation.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
+                addOrMergeErrorResponse(
+                    operation,
+                    "401",
+                    "No autenticado. Debe iniciar sesión con una cuenta válida para gestionar su "
+                        + "información de perfil."
+                );
+            }));
         };
     }
 
-    /**
-     * Utilitario para construir de forma limpia y reutilizable las respuestas de error mapeadas a ApiError.
-     */
-    private ApiResponse createErrorResponse(String descripcion) {
-        var mediaType = new io.swagger.v3.oas.models.media.MediaType()
-            .schema(new Schema<>().$ref(API_ERROR_SCHEMA_REF));
+    private void addOrMergeErrorResponse(Operation operation, String responseCode, String description) {
+        ApiResponses responses = operation.getResponses();
+        if (responses == null) {
+            responses = new ApiResponses();
+            operation.setResponses(responses);
+        }
 
+        ApiResponse response = responses.get(responseCode);
+        if (response == null) {
+            responses.addApiResponse(responseCode, createErrorResponse(description));
+            return;
+        }
+
+        if (response.getDescription() == null || response.getDescription().isBlank()) {
+            response.setDescription(description);
+        }
+
+        if (response.getContent() == null || response.getContent().isEmpty()) {
+            response.setContent(createJsonErrorContent());
+        }
+    }
+
+    private boolean isBodyMethod(HttpMethod httpMethod) {
+        return httpMethod == HttpMethod.POST
+            || httpMethod == HttpMethod.PUT
+            || httpMethod == HttpMethod.PATCH;
+    }
+
+    private ApiResponse createErrorResponse(String description) {
         return new ApiResponse()
-            .description(descripcion)
-            .content(new Content().addMediaType(JSON_MEDIA_TYPE, mediaType));
+            .description(description)
+            .content(createJsonErrorContent());
+    }
+
+    private Content createJsonErrorContent() {
+        return new Content().addMediaType(
+            JSON_MEDIA_TYPE,
+            new MediaType().schema(new Schema<>().$ref(API_ERROR_SCHEMA_REF))
+        );
+    }
+
+    private void ensureApiErrorSchema(OpenAPI openApi) {
+        if (openApi.getComponents() == null) {
+            openApi.setComponents(new Components());
+        }
+
+        registerApiErrorSchema(openApi.getComponents());
+    }
+
+    private void registerApiErrorSchema(Components components) {
+        ResolvedSchema resolvedSchema = ModelConverters.getInstance().resolveAsResolvedSchema(
+            new AnnotatedType(ApiError.class)
+        );
+
+        if (resolvedSchema == null || resolvedSchema.schema == null) {
+            return;
+        }
+
+        components.addSchemas("ApiError", resolvedSchema.schema);
+        resolvedSchema.referencedSchemas.forEach(components::addSchemas);
     }
 }

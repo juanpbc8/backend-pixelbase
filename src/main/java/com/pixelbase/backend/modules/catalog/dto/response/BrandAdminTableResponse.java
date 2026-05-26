@@ -1,6 +1,6 @@
 package com.pixelbase.backend.modules.catalog.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record BrandAdminTableResponse(
     Long id,
@@ -8,6 +8,6 @@ public record BrandAdminTableResponse(
     String slug,
     String logoUrl,
     long productCount,
-    LocalDateTime createdAt
+    Instant createdAt
 ) {
 }

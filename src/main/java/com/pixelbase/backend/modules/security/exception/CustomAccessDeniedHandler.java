@@ -11,7 +11,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
         var apiError = new ApiError(
-            LocalDateTime.now(),
+            Instant.now(),
             HttpServletResponse.SC_FORBIDDEN,
             "Acceso denegado. No tienes los privilegios necesarios para realizar esta operación.",
             null
