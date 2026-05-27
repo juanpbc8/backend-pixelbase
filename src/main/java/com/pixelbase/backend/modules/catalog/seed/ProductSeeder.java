@@ -153,7 +153,7 @@ public class ProductSeeder implements DataSeeder {
             originalPrice != null ? BigDecimal.valueOf(originalPrice) : null,
             stock, partNumber, ProductStatus.ACTIVO, brandId, catId, specs,
             List.of(new ProductRequest.ProductImageRequest(
-                "https://res.cloudinary.com/pixelbase/placeholder.png",
+                "https://res.cloudinary.com/dktgh8mgh/image/upload/v1779837715/" + publicId,
                 null,
                 publicId))
         );
