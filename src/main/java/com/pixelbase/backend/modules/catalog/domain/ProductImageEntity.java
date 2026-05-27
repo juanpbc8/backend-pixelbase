@@ -1,6 +1,5 @@
 package com.pixelbase.backend.modules.catalog.domain;
 
-import com.pixelbase.backend.common.entity.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductImageEntity extends AuditableEntity {
+public class ProductImageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +22,11 @@ public class ProductImageEntity extends AuditableEntity {
     @Column(name = "alt_text")
     private String altText;
 
-    @Builder.Default
-    private Integer position = 0;
+    @Column(nullable = false)
+    private Integer position;
+
+    @Column(name = "public_id", nullable = false)
+    private String publicId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)

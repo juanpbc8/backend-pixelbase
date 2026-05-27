@@ -21,7 +21,7 @@ public record ProductAdminDetailResponse(
     Map<String, Object> specifications,
     BrandSummaryResponse brand,
     CategorySummaryResponse category,
-    List<ProductImageResponse> images,
+    List<ProductImageAdminResponse> images,
     AuditResponse audit
 ) {
 }

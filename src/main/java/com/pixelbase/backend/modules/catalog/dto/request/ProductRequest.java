@@ -50,7 +50,11 @@ public record ProductRequest(
         String url,
 
         @Size(max = 255, message = "El texto alternativo no puede superar los 255 caracteres.")
-        String altText
+        String altText,
+        
+        @NotBlank(message = "El publicId de la imagen es obligatorio para la persistencia de " +
+            "infraestructura.")
+        String publicId
     ) {
     }
 }

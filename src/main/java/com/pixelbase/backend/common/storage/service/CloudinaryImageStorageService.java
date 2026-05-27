@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.pixelbase.backend.common.exception.ConflictException;
 import com.pixelbase.backend.common.storage.dto.ImageUploadResponse;
+import com.pixelbase.backend.common.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,26 +19,33 @@ public class CloudinaryImageStorageService implements IImageStorageService {
     private final Cloudinary cloudinary;
 
     @Override
-    public ImageUploadResponse upload(MultipartFile file, String folder) {
+    public ImageUploadResponse upload(MultipartFile file, String folder, String title) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("No se puede subir un archivo vacío o nulo.");
         }
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException(
+                "El título del producto es obligatorio para el SEO de la imagen.");
+        }
 
         try {
+            String productSlug = SlugUtil.toSlug(title);
+            String uniqueSuffix = java.util.UUID.randomUUID().toString().substring(0, 6);
+            String finalPublicId = productSlug + "_" + uniqueSuffix;
+
             // Configuramos las opciones de carga basadas en la documentación del SDK
             Map<?, ?> options = ObjectUtils.asMap(
                 "folder", "pixelbase/" + folder, // Organiza los archivos en carpetas por módulo
+                "public_id", finalPublicId, // Usa un ID legible y único basado en el título del producto
                 "resource_type", "image", // Detecta automáticamente si es imagen, video o raw
-                "use_filename", true, // Mantiene el nombre original del archivo
-                "unique_filename", true, // Añade un sufijo aleatorio para evitar colisiones
                 "overwrite", true, // Permite reemplazar el archivo si el ID es idéntico
+                "format", "webp",
 
                 // Transformación Entrante (optimización en tiempo de subida):
                 // c_limit: No estira imágenes, solo encoge si superan las dimensiones.
                 // w_800: Establece un ancho máximo de 800px para balancear nitidez y peso.
                 // q_auto: Ajusta la compresión automáticamente para mantener calidad visual.
-                // f_auto: Selecciona el formato más eficiente según el navegador (ej.: WebP o AVIF).
-                "transformation", "c_limit,w_800,q_auto,f_auto"
+                "transformation", "c_limit,w_800,q_auto"
             );
 
             // Subimos el arreglo de bytes directamente a la API de Cloudinary
@@ -66,7 +74,7 @@ public class CloudinaryImageStorageService implements IImageStorageService {
 
             if (!"ok".equals(result.get("result"))) {
                 throw new ConflictException(
-                    "La imagen con el ID proporcionado no existe en Cloudinary.");
+                    "La imagen con el publicId proporcionado no existe en Cloudinary.");
             }
         } catch (IOException e) {
             throw new RuntimeException(

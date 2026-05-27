@@ -11,9 +11,11 @@ public interface IImageStorageService {
      *
      * @param file   El archivo binario recibido desde la petición HTTP multipart.
      * @param folder El subdirectorio destino dentro del contenedor (ej.: "products", "brands").
+     * @param title  Un título descriptivo para el archivo, que puede ser utilizado como parte del nombre
+     *               final.
      * @return Un ImageUploadResponse con los metadatos y la URL final de persistencia.
      */
-    ImageUploadResponse upload(MultipartFile file, String folder);
+    ImageUploadResponse upload(MultipartFile file, String folder, String title);
 
     /**
      * Elimina de forma asíncrona o directa un recurso multimedia del servidor de la nube
