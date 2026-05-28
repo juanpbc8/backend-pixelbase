@@ -62,7 +62,7 @@ public class ProductServiceImpl implements IProductService {
         // 2. Agregamos filtros dinámicos solo si vienen en el request.
         specs = specs
             .and(ProductSpecification.hasSearch(search))
-            .and(ProductSpecification.hasCategory(categoryId))
+            .and(ProductSpecification.hasCategoryHierarchical(categoryId))
             .and(ProductSpecification.hasBrand(brandId))
             .and(ProductSpecification.priceBetween(minPrice, maxPrice));
 
@@ -244,7 +244,7 @@ public class ProductServiceImpl implements IProductService {
         // 1. Para el Admin NO usamos isActive(), permitiendo ver completamente el catálogo.
         Specification<ProductEntity> specs = Specification.unrestricted();
         specs = specs.and(ProductSpecification.hasSearch(search))
-            .and(ProductSpecification.hasCategory(categoryId))
+            .and(ProductSpecification.hasCategoryHierarchical(categoryId))
             .and(ProductSpecification.hasBrand(brandId));
 
         Page<ProductEntity> productPage = productRepository.findAll(specs, pageable);

@@ -1,7 +1,10 @@
 package com.pixelbase.backend.modules.catalog.repository.specification;
 
+import com.pixelbase.backend.modules.catalog.domain.CategoryEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
@@ -44,11 +47,25 @@ public class ProductSpecification {
     /**
      * Filtra productos que pertenezcan a una categoría específica por su ID.
      */
-    public static Specification<ProductEntity> hasCategory(Long categoryId) {
+    public static Specification<ProductEntity> hasCategoryHierarchical(Long categoryId) {
         return (root, query, cb) -> {
             if (categoryId == null) return null;
-            // Genera: category_id = categoryId
-            return cb.equal(root.get("category").get("id"), categoryId);
+
+            // 1. Join con la categoría asignada directamente al producto (sea el nivel que sea)
+            Join<ProductEntity, CategoryEntity> immediateCategory = root.join("category", JoinType.INNER);
+
+            // 2. LEFT JOINS para caminar hacia la raíz de forma relativa y segura
+            Join<CategoryEntity, CategoryEntity> parentCategory = immediateCategory.join("parent",
+                JoinType.LEFT);
+            Join<CategoryEntity, CategoryEntity> grandparentCategory = parentCategory.join("parent",
+                JoinType.LEFT);
+
+            // 3. Evaluación de coincidencia en cualquiera de los peldaños ascendentes
+            return cb.or(
+                cb.equal(immediateCategory.get("id"), categoryId),
+                cb.equal(parentCategory.get("id"), categoryId),
+                cb.equal(grandparentCategory.get("id"), categoryId)
+            );
         };
     }
 
