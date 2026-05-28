@@ -97,6 +97,7 @@ public class SwaggerConfig {
 
             openApi.getPaths().forEach((path, pathItem) -> pathItem.readOperationsMap().forEach(
                 (httpMethod, operation) -> {
+                    // 1. Asegurar la existencia de respuestas base por defecto
                     addOrMergeErrorResponse(operation, "500", "Error interno del servidor.");
 
                     if (isBodyMethod(httpMethod)) {
@@ -114,15 +115,22 @@ public class SwaggerConfig {
                             "El recurso solicitado no fue encontrado en el sistema."
                         );
                     }
+                    // Escanea todas las respuestas registradas en la operación (las automáticas y las
+                    // tuyas manuales)
+                    if (operation.getResponses() != null) {
+                        operation.getResponses().forEach((statusCode, response) -> {
+                            if (statusCode.startsWith("4") || statusCode.startsWith("5")) {
+                                response.setContent(createJsonErrorContent());
+                            }
+                        });
+                    }
                 }));
         };
     }
 
     private OpenApiCustomizer adminSecurityCustomizer() {
         return openApi -> {
-            if (openApi.getPaths() == null) {
-                return;
-            }
+            if (openApi.getPaths() == null) return;
 
             openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(operation -> {
                 operation.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
@@ -142,9 +150,7 @@ public class SwaggerConfig {
 
     private OpenApiCustomizer userSecurityCustomizer() {
         return openApi -> {
-            if (openApi.getPaths() == null) {
-                return;
-            }
+            if (openApi.getPaths() == null) return;
 
             openApi.getPaths().values().forEach(pathItem -> pathItem.readOperations().forEach(operation -> {
                 operation.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
@@ -171,12 +177,9 @@ public class SwaggerConfig {
             return;
         }
 
+        // Si ya existe (declarada en el controlador), NO tocamos su descripción personalizada
         if (response.getDescription() == null || response.getDescription().isBlank()) {
             response.setDescription(description);
-        }
-
-        if (response.getContent() == null || response.getContent().isEmpty()) {
-            response.setContent(createJsonErrorContent());
         }
     }
 
