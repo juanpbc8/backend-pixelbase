@@ -1,9 +1,10 @@
 package com.pixelbase.backend.modules.user.seed;
 
+import com.pixelbase.backend.common.enums.DocumentType;
 import com.pixelbase.backend.common.seed.DataSeeder;
-import com.pixelbase.backend.modules.user.domain.DocumentType;
 import com.pixelbase.backend.modules.user.domain.Role;
 import com.pixelbase.backend.modules.user.domain.UserEntity;
+import com.pixelbase.backend.modules.user.repository.UserRepository;
 import com.pixelbase.backend.modules.user.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.List;
 public class UserSeeder implements DataSeeder {
     private final IUserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Override
     public void seed() {
@@ -43,8 +45,10 @@ public class UserSeeder implements DataSeeder {
                 .documentNumber("00000000")
                 .role(Role.ADMIN)
                 .build();
-            userService.register(admin);
-            log.info(" ✅ -> UserSeeder: Administrador creado. Email: {}, Pass: {}", adminEmail, "pixelbase123");
+            userRepository.save(admin);
+            log.info(" ✅ -> UserSeeder: Administrador creado. Email: {}, Pass: {}",
+                adminEmail,
+                "pixelbase123");
         }
     }
 
@@ -78,7 +82,7 @@ public class UserSeeder implements DataSeeder {
 
         customers.stream()
             .filter(customer -> !userService.existsByEmail(customer.getEmail()))
-            .forEach(userService::register);
+            .forEach(userRepository::save);
 
         log.info(" ✅ -> UserSeeder: {} Clientes peruanos creados. Pass: {}", customers.size(), "cliente123");
     }
