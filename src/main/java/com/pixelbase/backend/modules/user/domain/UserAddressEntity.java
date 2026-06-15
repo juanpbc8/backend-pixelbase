@@ -19,17 +19,18 @@ public class UserAddressEntity extends AuditableEntity {
     @Column(name = "address_line")
     private String addressLine;
 
+    @Column(length = 100)
     private String department;
 
+    @Column(length = 100)
     private String province;
 
+    @Column(length = 100)
     private String district;
 
     private String reference;
 
     private boolean isDefault;
-
-    private AddressType type;
 
     @Column(name = "contact_first_name")
     private String contactFirstName;
@@ -37,7 +38,7 @@ public class UserAddressEntity extends AuditableEntity {
     @Column(name = "contact_last_name")
     private String contactLastName;
 
-    @Column(name = "contact_phone")
+    @Column(name = "contact_phone", length = 30)
     private String contactPhone;
 
     @ManyToOne(fetch = FetchType.LAZY)

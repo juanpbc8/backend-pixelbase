@@ -27,7 +27,7 @@ public class ProductEntity extends AuditableEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 6)
+    @Column(nullable = false, unique = true, length = 10)
     private String sku;
 
     @Column(columnDefinition = "TEXT")
@@ -40,13 +40,13 @@ public class ProductEntity extends AuditableEntity {
     private Integer stock;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private ProductStatus status;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "original_price", precision = 10, scale = 2)
+    @Column(name = "original_price", precision = 15, scale = 2)
     private BigDecimal originalPrice;
 
     // Manejo de JSONB nativo para especificaciones de hardware

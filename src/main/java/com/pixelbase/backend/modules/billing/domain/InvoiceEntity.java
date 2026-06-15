@@ -19,17 +19,21 @@ public class InvoiceEntity extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "total_amount")
+    @Column(name = "total_amount", precision = 15, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(length = 10)
     private String serie;
 
+    @Column(length = 20)
     private String number;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 30)
     private InvoiceType type;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 30)
     private InvoiceStatus status;
 
     @Column(name = "pdf_url", columnDefinition = "TEXT")
@@ -40,5 +44,5 @@ public class InvoiceEntity extends AuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    private OrderEntity user;
+    private OrderEntity order;
 }

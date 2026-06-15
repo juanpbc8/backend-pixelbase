@@ -1,6 +1,7 @@
 package com.pixelbase.backend.modules.user.domain;
 
 import com.pixelbase.backend.common.entity.AuditableEntity;
+import com.pixelbase.backend.common.enums.DocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import lombok.*;
 public class UserEntity extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -28,18 +29,18 @@ public class UserEntity extends AuditableEntity {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(length = 20)
+    @Column(length = 30)
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "document_type")
+    @Column(name = "document_type", length = 10)
     private DocumentType documentType;
 
     @Column(name = "document_number", length = 20)
     private String documentNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private Role role;
 
     @Column(nullable = false)
