@@ -1,4 +1,4 @@
-package com.pixelbase.backend.modules.catalog.service;
+package com.pixelbase.backend.modules.catalog.service.impl;
 
 import com.pixelbase.backend.common.dto.PageResponse;
 import com.pixelbase.backend.common.exception.ConflictException;
@@ -19,6 +19,7 @@ import com.pixelbase.backend.modules.catalog.repository.BrandRepository;
 import com.pixelbase.backend.modules.catalog.repository.CategoryRepository;
 import com.pixelbase.backend.modules.catalog.repository.ProductRepository;
 import com.pixelbase.backend.modules.catalog.repository.specification.ProductSpecification;
+import com.pixelbase.backend.modules.catalog.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,17 +40,6 @@ public class ProductServiceImpl implements IProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
-    /**
-     * Obtiene productos activos para la vitrina con filtros dinámicos y paginación.
-     *
-     * @param search     texto libre para búsqueda por nombre, sku o número de parte
-     * @param categoryId identificador de la categoría para filtrar resultados
-     * @param brandId    identificador de la marca para filtrar resultados
-     * @param minPrice   precio mínimo permitido
-     * @param maxPrice   precio máximo permitido
-     * @param pageable   parámetros de paginación y ordenamiento
-     * @throws RuntimeException cuando ocurre un error inesperado al consultar el catálogo
-     */
     @Override
     public PageResponse<ProductCardResponse> getStorefrontProducts(
         String search, Long categoryId, Long brandId,
@@ -83,13 +73,6 @@ public class ProductServiceImpl implements IProductService {
         );
     }
 
-    /**
-     * Obtiene el detalle público del producto por su slug.
-     *
-     * @param slug identificador semántico único del producto
-     * @throws ResourceNotFoundException cuando el producto no existe
-     * @throws RuntimeException          cuando ocurre un error inesperado al consultar el producto
-     */
     @Override
     public ProductDetailResponse getBySlug(String slug) {
         return productRepository.findBySlug(slug)
@@ -99,14 +82,6 @@ public class ProductServiceImpl implements IProductService {
                 slug)));
     }
 
-    /**
-     * Crea un producto nuevo con SKU corporativo, slug y relaciones completas.
-     *
-     * @param request datos de entrada del producto
-     * @throws ConflictException         cuando el nombre, slug o número de parte ya existen
-     * @throws ResourceNotFoundException cuando la marca o categoría no existen
-     * @throws RuntimeException          cuando ocurre un error inesperado al crear el producto
-     */
     @Override
     @Transactional
     public ProductAdminDetailResponse create(ProductRequest request) {
@@ -162,15 +137,6 @@ public class ProductServiceImpl implements IProductService {
         return productMapper.toAdminDetailResponse(savedProduct);
     }
 
-    /**
-     * Actualiza un producto existente preservando las reglas de unicidad.
-     *
-     * @param id      identificador del producto a actualizar
-     * @param request datos de entrada del producto
-     * @throws ConflictException         cuando el nombre, slug o número de parte ya existen
-     * @throws ResourceNotFoundException cuando el producto, marca o categoría no existen
-     * @throws RuntimeException          cuando ocurre un error inesperado al actualizar el producto
-     */
     @Override
     @Transactional
     public ProductAdminDetailResponse update(Long id, ProductRequest request) {
@@ -228,15 +194,6 @@ public class ProductServiceImpl implements IProductService {
         return productMapper.toAdminDetailResponse(savedProduct);
     }
 
-    /**
-     * Obtiene el listado administrativo paginado para la grilla de productos.
-     *
-     * @param search     texto libre de búsqueda
-     * @param categoryId identificador de categoría para filtrar
-     * @param brandId    identificador de marca para filtrar
-     * @param pageable   parámetros de paginación y ordenamiento
-     * @throws RuntimeException cuando ocurre un error inesperado al consultar el catálogo
-     */
     @Override
     public PageResponse<ProductAdminTableResponse> getAdminProducts(
         String search, Long categoryId, Long brandId, Pageable pageable) {
@@ -260,26 +217,11 @@ public class ProductServiceImpl implements IProductService {
         );
     }
 
-    /**
-     * Obtiene el detalle administrativo completo de un producto.
-     *
-     * @param id identificador del producto
-     * @throws ResourceNotFoundException cuando el producto no existe
-     * @throws RuntimeException          cuando ocurre un error inesperado al consultar el producto
-     */
     @Override
     public ProductAdminDetailResponse getAdminById(Long id) {
         return productMapper.toAdminDetailResponse(findProductByIdOrThrow(id));
     }
 
-    /**
-     * Actualiza el estado de visibilidad del producto.
-     *
-     * @param id      identificador del producto
-     * @param request estado solicitado para la transición
-     * @throws ResourceNotFoundException cuando el producto no existe
-     * @throws RuntimeException          cuando ocurre un error inesperado al actualizar el estado
-     */
     @Override
     @Transactional
     public void updateStatus(Long id, ProductStatusRequest request) {

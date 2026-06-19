@@ -1,6 +1,5 @@
-package com.pixelbase.backend.modules.catalog.service;
+package com.pixelbase.backend.modules.catalog.service.impl;
 
-import com.pixelbase.backend.common.exception.BadRequestException;
 import com.pixelbase.backend.common.exception.ConflictException;
 import com.pixelbase.backend.common.exception.ResourceNotFoundException;
 import com.pixelbase.backend.common.util.SlugUtil;
@@ -10,6 +9,7 @@ import com.pixelbase.backend.modules.catalog.dto.response.BrandAdminTableRespons
 import com.pixelbase.backend.modules.catalog.dto.response.BrandResponse;
 import com.pixelbase.backend.modules.catalog.mapper.BrandMapper;
 import com.pixelbase.backend.modules.catalog.repository.BrandRepository;
+import com.pixelbase.backend.modules.catalog.service.IBrandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,10 +25,6 @@ public class BrandServiceImpl implements IBrandService {
     private final BrandRepository brandRepository;
     private final BrandMapper brandMapper;
 
-    /**
-     * Obtiene todas las marcas registradas y las ordena alfabéticamente por
-     * nombre para su consumo en la vitrina pública.
-     */
     @Override
     public List<BrandResponse> getAll() {
         return brandRepository.findAllByOrderByNameAsc().stream()
@@ -36,32 +32,16 @@ public class BrandServiceImpl implements IBrandService {
             .toList();
     }
 
-    /**
-     * Obtiene la vista administrativa de marcas con el conteo agregado de
-     * productos asociados para alimentar tablas de gestión y evitar N + 1 consultas.
-     */
     @Override
     public List<BrandAdminTableResponse> getAdminTable() {
         return brandRepository.findAllAdminTable();
     }
 
-    /**
-     * Recupera una marca por su identificador interno.
-     *
-     * @param id identificador numérico de la marca a consultar
-     * @throws ResourceNotFoundException cuando no existe una marca con ese ID
-     */
     @Override
     public BrandResponse getById(Long id) {
         return brandMapper.toResponse(findByIdOrThrow(id));
     }
 
-    /**
-     * Recupera una marca por su slug público.
-     *
-     * @param slug identificador legible de la marca
-     * @throws ResourceNotFoundException cuando no existe una marca con ese slug
-     */
     @Override
     public BrandResponse getBySlug(String slug) {
         return brandRepository.findBySlug(slug)
@@ -72,14 +52,6 @@ public class BrandServiceImpl implements IBrandService {
             )));
     }
 
-    /**
-     * Crea una nueva marca, genera su slug automáticamente y persiste la
-     * entidad después de validar que no exista otra marca equivalente.
-     *
-     * @param request datos de entrada de la marca a registrar
-     * @throws ConflictException cuando ya existe una marca con el mismo nombre
-     *                           o slug normalizado
-     */
     @Override
     @Transactional
     public BrandResponse create(BrandRequest request) {
@@ -94,16 +66,6 @@ public class BrandServiceImpl implements IBrandService {
         return brandMapper.toResponse(brandRepository.save(entity));
     }
 
-    /**
-     * Actualiza una marca existente, recalcula el slug si el nombre cambia y
-     * valida la unicidad de la nueva identidad comercial.
-     *
-     * @param id      identificador de la marca a actualizar
-     * @param request nuevos datos de la marca
-     * @throws ResourceNotFoundException cuando no existe una marca con ese ID
-     * @throws ConflictException         cuando el nuevo nombre o slug colisiona con
-     *                                   otra marca registrada
-     */
     @Override
     @Transactional
     public BrandResponse update(Long id, BrandRequest request) {
@@ -123,15 +85,6 @@ public class BrandServiceImpl implements IBrandService {
         return brandMapper.toResponse(brand);
     }
 
-    /**
-     * Elimina una marca únicamente si no tiene productos activos asociados en
-     * el inventario.
-     *
-     * @param id identificador de la marca a eliminar
-     * @throws ResourceNotFoundException cuando no existe una marca con ese ID
-     * @throws BadRequestException       cuando la marca todavía tiene productos
-     *                                   asociados y no puede eliminarse
-     */
     @Override
     @Transactional
     public void delete(Long id) {
