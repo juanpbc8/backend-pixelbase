@@ -1,0 +1,55 @@
+spring:
+    application:
+        name: backend-pixelbase
+
+    profiles:
+        active: ${SPRING_PROFILES_ACTIVE:dev}
+
+    # CONEXIÓN A BASE DE DATOS (POSTGRESQL)
+    datasource:
+        url: ${SPRING_DATASOURCE_URL}
+        username: ${SPRING_DATASOURCE_USERNAME}
+        password: ${SPRING_DATASOURCE_PASSWORD}
+
+    # CONFIGURACIÓN ORM (JPA / HIBERNATE)
+    jpa:
+        hibernate:
+            ddl-auto: ${SPRING_JPA_DDL_AUTO:validate}
+        properties:
+            hibernate:
+                jdbc:
+                    time_zone: America/Lima
+
+    # CONFIGURACIÓN DE MULTIPART PARA SUBIDA DE ARCHIVOS
+    servlet:
+        multipart:
+            max-file-size: ${MULTIPART_MAX_FILE_SIZE:10MB}
+            max-request-size: ${MULTIPART_MAX_REQUEST_SIZE:10MB}
+
+    # CONFIGURACIÓN DE MIGRACIONES (FLYWAY)
+    flyway:
+        enabled: ${FLYWAY_ENABLED:true}
+        locations: classpath:db/migration
+        baseline-on-migrate: true
+        baseline-version: 0
+
+# Puerto dinámico asignado por la red interna del PaaS
+server:
+    port: ${PORT}
+
+# SEGURIDAD, JWT Y VARIABLES PROPIAS DE LA APP
+app:
+    cors:
+        allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    storefront:
+        url: ${APP_STOREFRONT_URL:http://localhost:4200}
+
+jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}
+
+# CLOUDINARY CONFIG (ALMACENAMIENTO DE IMÁGENES)
+cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME}
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
