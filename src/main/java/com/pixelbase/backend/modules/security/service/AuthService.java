@@ -6,9 +6,8 @@ import com.pixelbase.backend.modules.security.dto.AuthResponse;
 import com.pixelbase.backend.modules.security.dto.LoginRequest;
 import com.pixelbase.backend.modules.security.dto.RegisterRequest;
 import com.pixelbase.backend.modules.security.jwt.JwtService;
-import com.pixelbase.backend.modules.user.domain.Role;
-import com.pixelbase.backend.modules.user.domain.UserEntity;
-import com.pixelbase.backend.modules.user.service.IUserService;
+import com.pixelbase.backend.modules.user.exposed.UserExposedService;
+import com.pixelbase.backend.modules.user.exposed.dto.UserAuthDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final IUserService userService;
+    private final UserExposedService userExposedService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -34,29 +33,38 @@ public class AuthService {
         // 2. Recuperar el Principal (nuestro record UserDetailsImpl) del resultado de la autenticación
         UserDetailsImpl principal = (UserDetailsImpl) authenticated.getPrincipal();
         // Accedemos directamente a la entidad dentro del record
-        UserEntity user = principal.user();
+        UserAuthDto user = principal.user();
 
         // 3. Generar token usando el principal que ya tenemos
         String token = jwtService.generateToken(principal);
 
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
+        return new AuthResponse(token, user.email(), user.role());
     }
 
-    public AuthResponse register(RegisterRequest request) {
-        if (userService.existsByEmail(request.email())) {
+    public AuthResponse registerClient(RegisterRequest request) {
+        if (userExposedService.existsByEmail(request.email())) {
             throw new ConflictException("El email ya está registrado");
         }
 
-        UserEntity newUser = UserEntity.builder()
-            .email(request.email())
-            .passwordHash(passwordEncoder.encode(request.password()))
-            .role(Role.CLIENTE) // Por defecto para ecommerce
-            .enabled(true)
-            .build();
-
-        userService.register(newUser);
+        // Delegamos la creación al módulo "user". Security no sabe cómo se construye un usuario.
+        userExposedService.saveClient(
+            request.email(),
+            passwordEncoder.encode(request.password())
+        );
 
         // Auto-login tras registro
         return login(new LoginRequest(request.email(), request.password()));
+    }
+
+    public UserAuthDto registerAdmin(RegisterRequest request) {
+        if (userExposedService.existsByEmail(request.email())) {
+            throw new ConflictException("El email ya está registrado");
+        }
+
+        // Registramos y retornamos el DTO con la info del nuevo admin creado
+        return userExposedService.saveAdmin(
+            request.email(),
+            passwordEncoder.encode(request.password())
+        );
     }
 }

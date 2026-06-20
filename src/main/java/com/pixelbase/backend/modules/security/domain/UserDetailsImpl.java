@@ -1,6 +1,6 @@
 package com.pixelbase.backend.modules.security.domain;
 
-import com.pixelbase.backend.modules.user.domain.UserEntity;
+import com.pixelbase.backend.modules.user.exposed.dto.UserAuthDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,25 +8,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-public record UserDetailsImpl(UserEntity user) implements UserDetails {
+public record UserDetailsImpl(UserAuthDto user) implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.role()));
     }
 
     @Override
     public String getPassword() {
-        return user.getPasswordHash();
+        return user.passwordHash();
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.email();
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return user.enabled();
     }
 
     @Override

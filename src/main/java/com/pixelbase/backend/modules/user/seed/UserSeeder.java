@@ -5,7 +5,7 @@ import com.pixelbase.backend.common.seed.DataSeeder;
 import com.pixelbase.backend.modules.user.domain.Role;
 import com.pixelbase.backend.modules.user.domain.UserEntity;
 import com.pixelbase.backend.modules.user.repository.UserRepository;
-import com.pixelbase.backend.modules.user.service.IUserService;
+import com.pixelbase.backend.modules.user.service.UserInternalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
@@ -19,7 +19,7 @@ import java.util.List;
 @Order(4)
 @RequiredArgsConstructor
 public class UserSeeder implements DataSeeder {
-    private final IUserService userService;
+    private final UserInternalService userInternalService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
@@ -34,7 +34,7 @@ public class UserSeeder implements DataSeeder {
 
     private void createAdminIfNotExists() {
         String adminEmail = "admin@pixelbase.pe";
-        if (!userService.existsByEmail(adminEmail)) {
+        if (!userInternalService.existsByEmail(adminEmail)) {
             UserEntity admin = UserEntity.builder()
                 .email(adminEmail)
                 .passwordHash(passwordEncoder.encode("pixelbase123"))
@@ -81,7 +81,7 @@ public class UserSeeder implements DataSeeder {
         );
 
         customers.stream()
-            .filter(customer -> !userService.existsByEmail(customer.getEmail()))
+            .filter(customer -> !userInternalService.existsByEmail(customer.getEmail()))
             .forEach(userRepository::save);
 
         log.info(" ✅ -> UserSeeder: {} Clientes peruanos creados. Pass: {}", customers.size(), "cliente123");
