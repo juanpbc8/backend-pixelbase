@@ -2,12 +2,14 @@ package com.pixelbase.backend.modules.catalog.exposed;
 
 import com.pixelbase.backend.modules.catalog.exposed.dto.ProductSharedDto;
 
-public interface ICatalogService {
+import java.util.Optional;
+
+public interface CatalogExposedService {
 
     /**
      * Recupera la información compartida de un producto mediante su slug.
      */
-    ProductSharedDto getBySlug(String slug);
+    Optional<ProductSharedDto> findBySlug(String slug);
 
     /**
      * Reduce el stock físico de un producto de manera síncrona y transaccional.

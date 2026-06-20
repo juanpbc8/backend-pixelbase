@@ -2,12 +2,10 @@ package com.pixelbase.backend.modules.order.domain;
 
 import com.pixelbase.backend.common.entity.AuditableEntity;
 import com.pixelbase.backend.common.enums.DocumentType;
-import com.pixelbase.backend.modules.user.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,7 +32,7 @@ public class OrderEntity extends AuditableEntity {
     private OrderStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", nullable = false, length = 30)
+    @Column(name = "payment_method", length = 30) // Nace vacío hasta que la pasarela responda asíncronamente
     private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
@@ -65,15 +63,16 @@ public class OrderEntity extends AuditableEntity {
     @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
 
-    // --- Relaciones de Composición (Ciclo de vida amarrado a la Orden) ---
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // Nullable por defecto para compras Guest
-    private UserEntity user;
+    @Column(name = "user_id") // Nullable por defecto para compras Guest
+    private Long userId;
 
+    @Column(name = "store_id")
+    private Long storeId;
+
+    // --- Relaciones de Composición (Ciclo de vida amarrado a la Orden) ---
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private OrderAddressEntity orderAddress;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<OrderItemEntity> items = new ArrayList<>();
+    private List<OrderItemEntity> items;
 }

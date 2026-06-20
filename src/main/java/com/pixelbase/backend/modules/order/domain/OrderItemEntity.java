@@ -1,6 +1,5 @@
 package com.pixelbase.backend.modules.order.domain;
 
-import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,12 +34,11 @@ public class OrderItemEntity {
     @Column(name = "sku_snapshot", nullable = false, length = 10)
     private String skuSnapshot;
 
+    // Relación viva con el producto para estadísticas, reportes de categorías/marcas e imágenes en caliente
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
-
-    // Relación viva con el producto para estadísticas, reportes de categorías/marcas e imágenes en caliente
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private ProductEntity product;
 }

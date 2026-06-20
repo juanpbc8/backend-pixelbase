@@ -4,11 +4,13 @@ import com.pixelbase.backend.common.config.GlobalMapperConfig;
 import com.pixelbase.backend.common.dto.AuditResponse;
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductImageEntity;
+import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
 import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductAdminDetailResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductAdminTableResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductCardResponse;
 import com.pixelbase.backend.modules.catalog.dto.response.ProductDetailResponse;
+import com.pixelbase.backend.modules.catalog.exposed.dto.ProductSharedDto;
 import org.mapstruct.*;
 
 @Mapper(
@@ -64,6 +66,9 @@ public interface ProductMapper {
     @Mapping(target = "category", ignore = true)
     ProductEntity toEntity(ProductRequest request);
 
+    @Mapping(target = "active", expression = "java(mapStatusToActive(entity))")
+    ProductSharedDto toSharedDto(ProductEntity entity);
+
     /**
      * Actualiza una entidad existente a partir del request recibido.
      *
@@ -109,6 +114,11 @@ public interface ProductMapper {
             entity.getCreatedBy(),
             entity.getUpdatedBy()
         );
+    }
+
+    @Named("mapStatusToActive")
+    default boolean mapStatusToActive(ProductEntity entity) {
+        return entity.getStatus() == ProductStatus.ACTIVO;
     }
 
     /**
