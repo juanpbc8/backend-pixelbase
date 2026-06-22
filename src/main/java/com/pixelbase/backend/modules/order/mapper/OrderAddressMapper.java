@@ -20,8 +20,6 @@ public interface OrderAddressMapper {
     @Mapping(target = "contactFirstName", source = "recipient.firstName")
     @Mapping(target = "contactLastName", source = "recipient.lastName")
     @Mapping(target = "contactPhone", source = "recipient.phone")
-    @Mapping(target = "contactDocType", source = "recipient.docType")
-    @Mapping(target = "contactDocNumber", source = "recipient.docNumber")
     OrderAddressEntity toHomeDeliveryAddress(OrderCreateRequest.AddressRequest address,
                                              OrderCreateRequest.RecipientRequest recipient);
 
@@ -36,8 +34,6 @@ public interface OrderAddressMapper {
     @Mapping(target = "contactFirstName", source = "recipient.firstName")
     @Mapping(target = "contactLastName", source = "recipient.lastName")
     @Mapping(target = "contactPhone", source = "recipient.phone")
-    @Mapping(target = "contactDocType", source = "recipient.docType")
-    @Mapping(target = "contactDocNumber", source = "recipient.docNumber")
     OrderAddressEntity toStorePickupAddress(StoreSharedDto store,
                                             OrderCreateRequest.RecipientRequest recipient);
 }

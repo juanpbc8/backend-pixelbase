@@ -1,6 +1,5 @@
 package com.pixelbase.backend.modules.order.domain;
 
-import com.pixelbase.backend.common.enums.DocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,13 +39,6 @@ public class OrderAddressEntity {
 
     @Column(name = "contact_phone", nullable = false, length = 30)
     private String contactPhone;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "contact_doc_type", nullable = false, length = 10)
-    private DocumentType contactDocType;
-
-    @Column(name = "contact_doc_number", nullable = false, length = 20)
-    private String contactDocNumber;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

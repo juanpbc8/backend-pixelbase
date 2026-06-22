@@ -118,7 +118,20 @@ class OrderServiceImplTest {
         // --- ARRANGE (Preparar) ---
         Long guestUserId = null; // Compra invitado
         Long storeId = 2L;
-        var request = createBaseRequest(DeliveryType.RECOJO_EN_TIENDA, storeId);
+
+        // 1. Generamos el request base
+        var baseRequest = createBaseRequest(DeliveryType.RECOJO_EN_TIENDA, storeId);
+
+        // 2. REFACTOR SENIOR: Re-instanciamos fijando el bloque address estrictamente en null
+        var request = new OrderCreateRequest(
+            baseRequest.deliveryType(),
+            baseRequest.storeId(),
+            baseRequest.customer(),
+            null, // Dirección logística requerida en null para RECOJO_EN_TIENDA
+            baseRequest.recipient(),
+            baseRequest.items()
+        );
+
         var productDto = createMockProductSharedDto("mouse-logitech",
             "Mouse Logitech",
             5,
@@ -277,7 +290,21 @@ class OrderServiceImplTest {
     void createOrder_WhenStoreNotFoundOrInactive_ShouldThrowResourceNotFoundException() {
         // --- ARRANGE ---
         Long storeId = 3L;
-        var request = createBaseRequest(DeliveryType.RECOJO_EN_TIENDA, storeId);
+
+        // 1. Generamos el request base
+        var baseRequest = createBaseRequest(DeliveryType.RECOJO_EN_TIENDA, storeId);
+
+        // 2. REFACTOR SENIOR: Forzamos address a null para que pase la validación sintáctica del validador
+        // de entrega
+        var request = new OrderCreateRequest(
+            baseRequest.deliveryType(),
+            baseRequest.storeId(),
+            baseRequest.customer(),
+            null, // Dirección en null para evitar el ConflictException prematuro
+            baseRequest.recipient(),
+            baseRequest.items()
+        );
+
         var productDto = createMockProductSharedDto("teclado-razer",
             "Teclado Razer",
             10,
@@ -288,7 +315,7 @@ class OrderServiceImplTest {
         doNothing().when(catalogExposedService).decrementStock(productDto.id(), 1);
         when(orderMapper.toItemEntity(productDto, 1)).thenReturn(itemEntity);
 
-        // Simulamos que la tienda buscada no existe (devuelve null)
+        // Simulamos que la tienda buscada no existe (devuelve vacío)
         when(storeExposedService.getStoreById(storeId)).thenReturn(Optional.empty());
 
         // --- ACT & ASSERT ---
@@ -312,8 +339,7 @@ class OrderServiceImplTest {
             "Av. Larco 456", "Lima", "Lima", "Miraflores", "Al frente del banco"
         );
         var recipient = new OrderCreateRequest.RecipientRequest(
-            "Carlos", "Mendoza", "987654321", DocumentType.DNI, "74859612"
-        );
+            "Carlos", "Mendoza", "987654321");
 
         // Determinamos el slug según la prueba para dar dinamismo
         String slug = (storeId != null && storeId == 2L) ? "mouse-logitech" : "teclado-razer";

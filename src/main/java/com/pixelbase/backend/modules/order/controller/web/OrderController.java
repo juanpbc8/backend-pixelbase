@@ -38,10 +38,21 @@ public class OrderController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     @Operation(
-        summary = "Procesar Checkout (Crear Pedido)",
-        description = "Valida el carrito en caliente contra el catálogo, congela los snapshots comerciales " +
-            "de precios/SKU, descuenta stock de forma síncrona y genera la sesión agnóstica de pagos. " +
-            "Soporta compras de clientes autenticados e invitados."
+        summary = "Procesar Checkout (Crear Pedido - Cliente/Invitado)",
+        description = """
+            Valida el carrito en caliente contra el catálogo, congela los precios de forma síncrona, \
+            reduce inventario y genera la sesión para la pasarela de pagos.
+
+            ### Reglas Logísticas del Contrato:
+            * **Si `deliveryType` es `A_DOMICILIO`:** El objeto `address` es **obligatorio** con todos sus campos geográficos, y el campo `storeId` debe viajar como `null`.
+
+            * **Si `deliveryType` es `RECOJO_EN_TIENDA`:** El campo `storeId` es **obligatorio** (ID de sede válida), y el objeto `address` debe viajar como `null`.
+
+            *
+            ### Control de Identidad:
+            El endpoint es público. Si se envía un JWT válido, la orden se asocia automáticamente a la cuenta del cliente. \
+            Si no se envía token, el backend procesa la transacción bajo la modalidad de **GUEST (Invitado)**.
+            """
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -54,7 +65,7 @@ public class OrderController {
         ),
         @ApiResponse(
             responseCode = "409",
-            description = "Stock insuficiente u otra lógica de negocio interna"
+            description = "Stock insuficiente o violación de las reglas cruzadas de entrega."
         ),
     })
     public ResponseEntity<OrderCreateResponse> createOrder(

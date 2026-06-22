@@ -95,13 +95,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void validateDeliveryRules(OrderCreateRequest request) {
-        if (request.deliveryType() == DeliveryType.A_DOMICILIO && request.storeId() != null) {
-            throw new ConflictException(
-                "No se puede enviar un ID de tienda si el método de entrega es A_DOMICILIO.");
+        if (request.deliveryType() == DeliveryType.A_DOMICILIO) {
+            if (request.address() == null) {
+                throw new ConflictException(
+                    "La dirección exacta de envío es obligatoria cuando el método de entrega es A_DOMICILIO" +
+                        ".");
+            }
+            if (request.storeId() != null) {
+                throw new ConflictException(
+                    "No se puede enviar un ID de tienda si el método de entrega es A_DOMICILIO.");
+            }
         }
-        if (request.deliveryType() == DeliveryType.RECOJO_EN_TIENDA && request.storeId() == null) {
-            throw new ConflictException(
-                "Debe seleccionar una tienda válida para la opción RECOJO_EN_TIENDA.");
+        if (request.deliveryType() == DeliveryType.RECOJO_EN_TIENDA) {
+            if (request.storeId() == null) {
+                throw new ConflictException(
+                    "Debe seleccionar una tienda válida para la opción RECOJO_EN_TIENDA.");
+            }
+            if (request.address() != null) {
+                throw new ConflictException(
+                    "No se debe enviar información de dirección si el método de entrega es RECOJO_EN_TIENDA" +
+                        ".");
+            }
         }
     }
 
