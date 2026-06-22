@@ -78,10 +78,10 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi userApi() {
+    public GroupedOpenApi customerApi() {
         return GroupedOpenApi.builder()
-            .group("Account API")
-            .pathsToMatch("/api/v1/account/**")
+            .group("Customer API")
+            .pathsToMatch("/api/v1/customer/**")
             .addOpenApiCustomizer(globalErrorCustomizer())
             .addOpenApiCustomizer(userSecurityCustomizer())
             .build();

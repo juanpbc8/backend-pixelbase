@@ -30,16 +30,8 @@ public class UserAddressEntity extends AuditableEntity {
 
     private String reference;
 
-    private boolean isDefault;
-
-    @Column(name = "contact_first_name")
-    private String contactFirstName;
-
-    @Column(name = "contact_last_name")
-    private String contactLastName;
-
-    @Column(name = "contact_phone", length = 30)
-    private String contactPhone;
+    @Column(name = "is_default", nullable = false)
+    private boolean defaulted;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

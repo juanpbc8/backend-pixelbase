@@ -55,7 +55,7 @@ public class SecurityConfig {
                     "/api/v1/public/**"
                 ).permitAll()
                 // Solo los CLIENTES pueden acceder a su perfil de tienda
-                .requestMatchers("/api/v1/account/**").hasRole("CLIENTE")
+                .requestMatchers("/api/v1/customer/**").hasRole("CLIENTE")
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 // Fallback de seguridad
                 .anyRequest().authenticated()

@@ -106,10 +106,7 @@ public class UserAddressSeeder implements DataSeeder {
             .province(prov)
             .district(dist)
             .reference(ref)
-            .isDefault(isDefault)
-            .contactFirstName(user.getFirstName())
-            .contactLastName(user.getLastName())
-            .contactPhone(user.getPhone())
+            .defaulted(isDefault)
             .user(user)
             .build();
         addressRepository.save(address);
