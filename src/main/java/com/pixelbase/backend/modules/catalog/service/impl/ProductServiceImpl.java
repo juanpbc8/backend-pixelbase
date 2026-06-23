@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -58,19 +57,12 @@ public class ProductServiceImpl implements IProductService {
 
         // 3. Ejecutamos la consulta paginada en el repositorio.
         Page<ProductEntity> productPage = productRepository.findAll(specs, pageable);
-        // 4. Mapeamos la página de entidades a una página de DTO (Cards).
-        List<ProductCardResponse> content = productPage.getContent().stream()
-            .map(productMapper::toCardResponse)
-            .toList();
-        // 5. Envolvemos en nuestro PageResponse para el frontend.
-        return new PageResponse<>(
-            content,
-            productPage.getNumber(),
-            productPage.getSize(),
-            productPage.getTotalElements(),
-            productPage.getTotalPages(),
-            productPage.isLast()
-        );
+
+        // 3. REFACTOR: Transformamos el contenido de la caja sin perder metadatos
+        Page<ProductCardResponse> dtoPage = productPage.map(productMapper::toCardResponse);
+
+        // 5. Envoltura limpia desacoplada del framework
+        return PageResponse.from(dtoPage);
     }
 
     @Override
@@ -204,17 +196,14 @@ public class ProductServiceImpl implements IProductService {
             .and(ProductSpecification.hasCategoryHierarchical(categoryId))
             .and(ProductSpecification.hasBrand(brandId));
 
+        // 2. Consulta original (Obtenemos la caja inteligente de entidades)
         Page<ProductEntity> productPage = productRepository.findAll(specs, pageable);
 
-        // 2. Devolvemos ProductDetailResponse (Completo) para que el admin gestione stock y estados.
-        return new PageResponse<>(
-            productPage.map(productMapper::toAdminTableResponse).getContent(),
-            productPage.getNumber(),
-            productPage.getSize(),
-            productPage.getTotalElements(),
-            productPage.getTotalPages(),
-            productPage.isLast()
-        );
+        // 3. REFACTOR: Transformamos el contenido de la caja sin perder metadatos
+        Page<ProductAdminTableResponse> dtoPage = productPage.map(productMapper::toAdminTableResponse);
+
+        // 4. Envoltura limpia desacoplada del framework
+        return PageResponse.from(dtoPage);
     }
 
     @Override

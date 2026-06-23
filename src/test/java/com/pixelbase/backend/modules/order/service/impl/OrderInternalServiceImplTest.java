@@ -7,9 +7,9 @@ import com.pixelbase.backend.modules.catalog.exposed.CatalogExposedService;
 import com.pixelbase.backend.modules.catalog.exposed.dto.ProductSharedDto;
 import com.pixelbase.backend.modules.configuration.exposed.StoreExposedService;
 import com.pixelbase.backend.modules.configuration.exposed.dto.StoreSharedDto;
+import com.pixelbase.backend.modules.order.api.dto.request.OrderCreateRequest;
+import com.pixelbase.backend.modules.order.api.dto.response.OrderCreateResponse;
 import com.pixelbase.backend.modules.order.domain.*;
-import com.pixelbase.backend.modules.order.dto.request.OrderCreateRequest;
-import com.pixelbase.backend.modules.order.dto.response.OrderCreateResponse;
 import com.pixelbase.backend.modules.order.infrastructure.payment.PaymentGatewayService;
 import com.pixelbase.backend.modules.order.infrastructure.payment.dto.PaymentSessionResult;
 import com.pixelbase.backend.modules.order.mapper.OrderAddressMapper;
@@ -31,8 +31,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Pruebas Unitarias del Servicio de Órdenes (OrderServiceImpl)")
-class OrderServiceImplTest {
+@DisplayName("Pruebas Unitarias del Servicio de Órdenes (OrderInternalServiceImpl)")
+class OrderInternalServiceImplTest {
 
     @Mock
     private OrderRepository orderRepository;
@@ -53,7 +53,7 @@ class OrderServiceImplTest {
     private OrderAddressMapper orderAddressMapper;
 
     @InjectMocks
-    private OrderServiceImpl orderService;
+    private OrderInternalServiceImpl orderService;
 
     // --- ESCENARIOS EXITOSOS (HAPPY PATHS) ---
     @Test
@@ -80,7 +80,7 @@ class OrderServiceImplTest {
         doNothing().when(catalogExposedService).decrementStock(productDto.id(), 1);
         when(orderAddressMapper.toHomeDeliveryAddress(any(), any())).thenReturn(addressEntity);
         when(orderRepository.getNextOrderCodeSequence()).thenReturn(1L);
-        when(orderMapper.toItemEntity(productDto, 1)).thenReturn(itemEntity);
+        when(orderMapper.toOrderItemEntity(productDto, 1)).thenReturn(itemEntity);
         when(orderMapper.toOrderEntity(eq(request),
             anyString(),
             any(),
@@ -157,7 +157,7 @@ class OrderServiceImplTest {
         when(storeExposedService.getStoreById(storeId)).thenReturn(Optional.of(storeDto));
         when(orderAddressMapper.toStorePickupAddress(eq(storeDto), any())).thenReturn(addressEntity);
         when(orderRepository.getNextOrderCodeSequence()).thenReturn(2L);
-        when(orderMapper.toItemEntity(productDto, 1)).thenReturn(itemEntity);
+        when(orderMapper.toOrderItemEntity(productDto, 1)).thenReturn(itemEntity);
         when(orderMapper.toOrderEntity(eq(request),
             anyString(),
             any(),
@@ -243,7 +243,7 @@ class OrderServiceImplTest {
         // Construimos un DTO de producto cuyo atributo 'active' sea estrictamente FALSE
         var inactiveProduct = new ProductSharedDto(
             12L, "teclado-razer", "Teclado Razer", "SKU-123", "PART-999",
-            BigDecimal.valueOf(350.00), 10, false // ◄── Inactivo
+            BigDecimal.valueOf(350.00), 10, false, null
         );
 
         when(catalogExposedService.findBySlug("teclado-razer")).thenReturn(Optional.of(inactiveProduct));
@@ -313,7 +313,7 @@ class OrderServiceImplTest {
 
         when(catalogExposedService.findBySlug("teclado-razer")).thenReturn(Optional.of(productDto));
         doNothing().when(catalogExposedService).decrementStock(productDto.id(), 1);
-        when(orderMapper.toItemEntity(productDto, 1)).thenReturn(itemEntity);
+        when(orderMapper.toOrderItemEntity(productDto, 1)).thenReturn(itemEntity);
 
         // Simulamos que la tienda buscada no existe (devuelve vacío)
         when(storeExposedService.getStoreById(storeId)).thenReturn(Optional.empty());
@@ -352,6 +352,7 @@ class OrderServiceImplTest {
                                                         String name,
                                                         Integer stock,
                                                         BigDecimal price) {
-        return new ProductSharedDto(12L, slug, name, "SKU-123", "PART-999", price, stock, true);
+        return new ProductSharedDto(12L, slug, name, "SKU-123", "PART-999", price, stock,
+            true, null);
     }
 }

@@ -53,6 +53,11 @@ public class UserSeeder implements DataSeeder {
     }
 
     private void createCustomers() {
+        if (userRepository.existsByRole(Role.CLIENTE)) {
+            log.info(" ℹ️ -> UserSeeder: Los clientes de prueba ya se encuentran registrados.");
+            return;
+        }
+
         List<UserEntity> customers = List.of(
             UserEntity.builder()
                 .email("juan.perez@gmail.com")

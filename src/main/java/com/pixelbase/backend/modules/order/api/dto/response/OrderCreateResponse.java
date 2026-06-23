@@ -1,4 +1,4 @@
-package com.pixelbase.backend.modules.order.dto.response;
+package com.pixelbase.backend.modules.order.api.dto.response;
 
 import com.pixelbase.backend.modules.order.domain.OrderStatus;
 

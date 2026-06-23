@@ -1,4 +1,4 @@
-package com.pixelbase.backend.modules.order.dto.request;
+package com.pixelbase.backend.modules.order.api.dto.request;
 
 import com.pixelbase.backend.common.enums.DocumentType;
 import com.pixelbase.backend.modules.order.domain.DeliveryType;

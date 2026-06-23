@@ -1,6 +1,8 @@
 package com.pixelbase.backend.modules.order.repository;
 
 import com.pixelbase.backend.modules.order.domain.OrderEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,4 +15,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(value = "SELECT nextval('order_code_seq')", nativeQuery = true)
     Long getNextOrderCodeSequence();
+
+    Page<OrderEntity> findAllByUserId(Long userId, Pageable pageable);
 }

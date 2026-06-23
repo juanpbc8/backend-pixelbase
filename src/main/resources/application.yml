@@ -43,7 +43,10 @@ app:
         allowed-origins: ${CORS_ALLOWED_ORIGINS}
     storefront:
         url: ${APP_STOREFRONT_URL:http://localhost:4200}
-
+    fallback:
+        product-slug: ${APP_FALLBACK_PRODUCT_SLUG:producto-no-disponible}
+        product-image: ${APP_FALLBACK_PRODUCT_IMAGE:assets/images/placeholder-hardware.png}
+        
 jwt:
     secret: ${JWT_SECRET}
     expiration: ${JWT_EXPIRATION}

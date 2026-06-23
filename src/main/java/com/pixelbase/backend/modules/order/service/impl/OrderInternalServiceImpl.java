@@ -1,22 +1,26 @@
 package com.pixelbase.backend.modules.order.service.impl;
 
+import com.pixelbase.backend.common.dto.PageResponse;
 import com.pixelbase.backend.common.exception.ConflictException;
 import com.pixelbase.backend.common.exception.ResourceNotFoundException;
 import com.pixelbase.backend.modules.catalog.exposed.CatalogExposedService;
 import com.pixelbase.backend.modules.catalog.exposed.dto.ProductSharedDto;
 import com.pixelbase.backend.modules.configuration.exposed.StoreExposedService;
 import com.pixelbase.backend.modules.configuration.exposed.dto.StoreSharedDto;
+import com.pixelbase.backend.modules.order.api.dto.request.OrderCreateRequest;
+import com.pixelbase.backend.modules.order.api.dto.response.CustomerOrderDetailResponse;
+import com.pixelbase.backend.modules.order.api.dto.response.CustomerOrderSummaryResponse;
+import com.pixelbase.backend.modules.order.api.dto.response.OrderCreateResponse;
 import com.pixelbase.backend.modules.order.domain.*;
-import com.pixelbase.backend.modules.order.dto.request.OrderCreateRequest;
-import com.pixelbase.backend.modules.order.dto.response.OrderCreateResponse;
 import com.pixelbase.backend.modules.order.infrastructure.payment.PaymentGatewayService;
 import com.pixelbase.backend.modules.order.infrastructure.payment.dto.PaymentSessionResult;
 import com.pixelbase.backend.modules.order.mapper.OrderAddressMapper;
 import com.pixelbase.backend.modules.order.mapper.OrderMapper;
 import com.pixelbase.backend.modules.order.repository.OrderRepository;
-import com.pixelbase.backend.modules.order.service.OrderService;
+import com.pixelbase.backend.modules.order.service.OrderInternalService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +29,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class OrderServiceImpl implements OrderService {
+public class OrderInternalServiceImpl implements OrderInternalService {
     private final OrderRepository orderRepository;
     private final CatalogExposedService catalogExposedService;
     private final StoreExposedService storeExposedService;
@@ -41,8 +46,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderCreateResponse createOrder(OrderCreateRequest request, Long authenticatedUserId) {
-        log.info("Iniciando flujo transaccional de checkout para el cliente: {}", request.customer().email());
-
         // 1. Validaciones de Negocio Cruzadas
         validateDeliveryRules(request);
 
@@ -94,6 +97,51 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    // =========================================================================
+    // --- CONTEXTO: CLIENTE AUTENTICADO (ZONA PROTEGIDA) ---
+    // =========================================================================
+    @Override
+    public PageResponse<CustomerOrderSummaryResponse> getCustomerOrdersHistory(Long userId,
+                                                                               Pageable pageable) {
+        Page<OrderEntity> ordersPage = orderRepository.findAllByUserId(userId, pageable);
+
+        Page<CustomerOrderSummaryResponse> summaryPage =
+            ordersPage.map(orderMapper::toCustomerOrderSummaryResponse);
+
+        return PageResponse.from(summaryPage);
+    }
+
+    @Override
+    public CustomerOrderDetailResponse getCustomerOrderDetail(String orderCode, Long userId) {
+        OrderEntity order = findByOrderCodeOrThrowNotFound(orderCode);
+
+        // BLINDAJE CRÍTICO ANTI-IDOR: Evitamos que un cliente logueado vea compras de otro cliente
+        if (order.getUserId() == null || !order.getUserId().equals(userId)) {
+            // Ofuscación defensiva: Arrojamos 404 en lugar de 403 para no confirmar la existencia del recurso
+            throw new ResourceNotFoundException(String.format("No se encontró la orden con el código '%s'.",
+                orderCode));
+        }
+
+        return enrichAndBuildDetailResponse(order);
+    }
+
+    // =========================================================================
+    // --- CONTEXTO: CONSULTA PÚBLICA (SOLUCIÓN INVITADOS / TRACKING / SUCCESS) ---
+    // =========================================================================
+    @Override
+    public CustomerOrderDetailResponse getPublicOrderDetail(String orderCode, String email) {
+        OrderEntity order = findByOrderCodeOrThrowNotFound(orderCode);
+
+        // BLINDAJE DE DOBLE FACTOR LOGÍSTICO: El correo enviado por QueryParam debe hacer match exacto
+        if (!order.getCustomerEmail().equalsIgnoreCase(email.trim())) {
+            throw new ResourceNotFoundException(
+                String.format("No se encontró la orden con el código '%s'.",
+                    orderCode));
+        }
+
+        return enrichAndBuildDetailResponse(order);
+    }
+
     private void validateDeliveryRules(OrderCreateRequest request) {
         if (request.deliveryType() == DeliveryType.A_DOMICILIO) {
             if (request.address() == null) {
@@ -142,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
             }
 
             catalogExposedService.decrementStock(product.id(), req.quantity());
-            OrderItemEntity itemEntity = orderMapper.toItemEntity(product, req.quantity());
+            OrderItemEntity itemEntity = orderMapper.toOrderItemEntity(product, req.quantity());
             items.add(itemEntity);
         }
         return items;
@@ -169,5 +217,32 @@ public class OrderServiceImpl implements OrderService {
         Long sequence = orderRepository.getNextOrderCodeSequence();
         String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return String.format("ORD-%s-%04d", dateStr, sequence);
+    }
+
+    // =========================================================================
+    // ENRIQUECIMIENTO ASÍNCRONO EN MEMORIA DE DATOS PARA RESPUESTA DETALLADA
+    // =========================================================================
+    private CustomerOrderDetailResponse enrichAndBuildDetailResponse(OrderEntity order) {
+        // 1. Extraer todos los productIds únicos de la orden para la consulta masiva
+        List<Long> productIds = order.getItems().stream()
+            .map(OrderItemEntity::getProductId)
+            .distinct()
+            .toList();
+
+        // 2. Ejecutar UNA SOLA consulta al módulo de catálogo (Cero problemas N+1)
+        List<ProductSharedDto> sharedProducts = catalogExposedService.findAllByIds(productIds);
+
+        // 3. Convertir a un mapa indexado por ID para búsquedas instantáneas O(1)
+        Map<Long, ProductSharedDto> catalogMap = sharedProducts.stream()
+            .collect(Collectors.toMap(ProductSharedDto::id, p -> p));
+
+        // 4. Invocación limpia y directa delegando toda la conversión estructural a MapStruct
+        return orderMapper.toCustomerOrderDetailResponse(order, catalogMap);
+    }
+
+    private OrderEntity findByOrderCodeOrThrowNotFound(String orderCode) {
+        return orderRepository.findByOrderCode(orderCode)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                String.format("No se encontró la orden con el código '%s'.", orderCode)));
     }
 }
