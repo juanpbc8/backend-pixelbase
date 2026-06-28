@@ -1,6 +1,6 @@
 package com.pixelbase.backend.modules.configuration.service;
 
-import com.pixelbase.backend.modules.configuration.dto.response.StoreResponse;
+import com.pixelbase.backend.modules.configuration.api.web.dto.response.StoreResponse;
 
 import java.util.List;
 

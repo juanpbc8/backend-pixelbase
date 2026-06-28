@@ -2,14 +2,14 @@ package com.pixelbase.backend.modules.catalog.mapper;
 
 import com.pixelbase.backend.common.config.GlobalMapperConfig;
 import com.pixelbase.backend.common.dto.AuditResponse;
+import com.pixelbase.backend.modules.catalog.api.admin.dto.request.ProductCreateRequest;
+import com.pixelbase.backend.modules.catalog.api.admin.dto.response.ProductAdminDetailResponse;
+import com.pixelbase.backend.modules.catalog.api.admin.dto.response.ProductAdminTableResponse;
+import com.pixelbase.backend.modules.catalog.api.web.dto.response.ProductCardResponse;
+import com.pixelbase.backend.modules.catalog.api.web.dto.response.ProductDetailResponse;
 import com.pixelbase.backend.modules.catalog.domain.ProductEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductImageEntity;
 import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
-import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
-import com.pixelbase.backend.modules.catalog.dto.response.ProductAdminDetailResponse;
-import com.pixelbase.backend.modules.catalog.dto.response.ProductAdminTableResponse;
-import com.pixelbase.backend.modules.catalog.dto.response.ProductCardResponse;
-import com.pixelbase.backend.modules.catalog.dto.response.ProductDetailResponse;
 import com.pixelbase.backend.modules.catalog.exposed.dto.ProductSharedDto;
 import org.mapstruct.*;
 
@@ -64,7 +64,7 @@ public interface ProductMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "brand", ignore = true)
     @Mapping(target = "category", ignore = true)
-    ProductEntity toEntity(ProductRequest request);
+    ProductEntity toEntity(ProductCreateRequest request);
 
     @Mapping(target = "active", expression = "java(mapStatusToActive(entity))")
     ProductSharedDto toSharedDto(ProductEntity entity);
@@ -80,7 +80,7 @@ public interface ProductMapper {
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "sku", ignore = true)
     @Mapping(target = "slug", ignore = true)
-    void updateEntityFromRequest(ProductRequest request, @MappingTarget ProductEntity entity);
+    void updateEntityFromRequest(ProductCreateRequest request, @MappingTarget ProductEntity entity);
 
     /**
      * Obtiene la URL principal de imagen para la tarjeta del producto.

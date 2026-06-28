@@ -1,10 +1,10 @@
 package com.pixelbase.backend.modules.order.service;
 
 import com.pixelbase.backend.common.dto.PageResponse;
-import com.pixelbase.backend.modules.order.api.dto.request.OrderCreateRequest;
-import com.pixelbase.backend.modules.order.api.dto.response.CustomerOrderDetailResponse;
-import com.pixelbase.backend.modules.order.api.dto.response.CustomerOrderSummaryResponse;
-import com.pixelbase.backend.modules.order.api.dto.response.OrderCreateResponse;
+import com.pixelbase.backend.modules.order.api.customer.dto.response.CustomerOrderDetailResponse;
+import com.pixelbase.backend.modules.order.api.customer.dto.response.CustomerOrderSummaryResponse;
+import com.pixelbase.backend.modules.order.api.web.dto.request.OrderCreateRequest;
+import com.pixelbase.backend.modules.order.api.web.dto.response.OrderCreateResponse;
 import org.springframework.data.domain.Pageable;
 
 public interface OrderInternalService {

@@ -2,10 +2,10 @@ package com.pixelbase.backend.modules.user.service.impl;
 
 import com.pixelbase.backend.common.exception.ConflictException;
 import com.pixelbase.backend.common.exception.ResourceNotFoundException;
-import com.pixelbase.backend.modules.user.api.dto.request.CustomerAddressSaveRequest;
-import com.pixelbase.backend.modules.user.api.dto.request.CustomerProfileUpdateRequest;
-import com.pixelbase.backend.modules.user.api.dto.response.CustomerAddressResponse;
-import com.pixelbase.backend.modules.user.api.dto.response.CustomerProfileResponse;
+import com.pixelbase.backend.modules.user.api.customer.dto.request.CustomerAddressSaveRequest;
+import com.pixelbase.backend.modules.user.api.customer.dto.request.CustomerProfileUpdateRequest;
+import com.pixelbase.backend.modules.user.api.customer.dto.response.CustomerAddressResponse;
+import com.pixelbase.backend.modules.user.api.customer.dto.response.CustomerProfileResponse;
 import com.pixelbase.backend.modules.user.domain.UserAddressEntity;
 import com.pixelbase.backend.modules.user.domain.UserEntity;
 import com.pixelbase.backend.modules.user.mapper.CustomerMapper;

@@ -1,7 +1,7 @@
 package com.pixelbase.backend.modules.configuration.service.impl;
 
+import com.pixelbase.backend.modules.configuration.api.web.dto.response.StoreResponse;
 import com.pixelbase.backend.modules.configuration.domain.StoreEntity;
-import com.pixelbase.backend.modules.configuration.dto.response.StoreResponse;
 import com.pixelbase.backend.modules.configuration.mapper.StoreMapper;
 import com.pixelbase.backend.modules.configuration.repository.StoreRepository;
 import com.pixelbase.backend.modules.configuration.service.StoreInternalService;

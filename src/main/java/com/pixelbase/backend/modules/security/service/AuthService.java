@@ -1,10 +1,10 @@
 package com.pixelbase.backend.modules.security.service;
 
 import com.pixelbase.backend.common.exception.ConflictException;
+import com.pixelbase.backend.modules.security.api.web.dto.request.LoginRequest;
+import com.pixelbase.backend.modules.security.api.web.dto.request.RegisterRequest;
+import com.pixelbase.backend.modules.security.api.web.dto.response.AuthResponse;
 import com.pixelbase.backend.modules.security.domain.UserDetailsImpl;
-import com.pixelbase.backend.modules.security.dto.AuthResponse;
-import com.pixelbase.backend.modules.security.dto.LoginRequest;
-import com.pixelbase.backend.modules.security.dto.RegisterRequest;
 import com.pixelbase.backend.modules.security.jwt.JwtService;
 import com.pixelbase.backend.modules.user.exposed.UserExposedService;
 import com.pixelbase.backend.modules.user.exposed.dto.UserAuthDto;

@@ -2,9 +2,9 @@ package com.pixelbase.backend.modules.order.mapper;
 
 import com.pixelbase.backend.common.config.GlobalMapperConfig;
 import com.pixelbase.backend.modules.catalog.exposed.dto.ProductSharedDto;
-import com.pixelbase.backend.modules.order.api.dto.request.OrderCreateRequest;
-import com.pixelbase.backend.modules.order.api.dto.response.CustomerOrderDetailResponse;
-import com.pixelbase.backend.modules.order.api.dto.response.CustomerOrderSummaryResponse;
+import com.pixelbase.backend.modules.order.api.customer.dto.response.CustomerOrderDetailResponse;
+import com.pixelbase.backend.modules.order.api.customer.dto.response.CustomerOrderSummaryResponse;
+import com.pixelbase.backend.modules.order.api.web.dto.request.OrderCreateRequest;
 import com.pixelbase.backend.modules.order.domain.OrderAddressEntity;
 import com.pixelbase.backend.modules.order.domain.OrderEntity;
 import com.pixelbase.backend.modules.order.domain.OrderItemEntity;

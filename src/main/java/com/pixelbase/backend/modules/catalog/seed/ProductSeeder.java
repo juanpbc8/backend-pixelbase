@@ -1,12 +1,12 @@
 package com.pixelbase.backend.modules.catalog.seed;
 
 import com.pixelbase.backend.common.seed.DataSeeder;
+import com.pixelbase.backend.modules.catalog.api.admin.dto.request.ProductCreateRequest;
 import com.pixelbase.backend.modules.catalog.domain.ProductStatus;
-import com.pixelbase.backend.modules.catalog.dto.request.ProductRequest;
 import com.pixelbase.backend.modules.catalog.repository.BrandRepository;
 import com.pixelbase.backend.modules.catalog.repository.CategoryRepository;
 import com.pixelbase.backend.modules.catalog.repository.ProductRepository;
-import com.pixelbase.backend.modules.catalog.service.IProductService;
+import com.pixelbase.backend.modules.catalog.service.ProductInternalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
@@ -22,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductSeeder implements DataSeeder {
 
-    private final IProductService productService;
+    private final ProductInternalService productInternalService;
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
@@ -147,17 +147,17 @@ public class ProductSeeder implements DataSeeder {
         Long catId = categoryRepository.findBySlug(catSlug)
             .orElseThrow(() -> new RuntimeException("Categoría no encontrada: " + catSlug)).getId();
 
-        ProductRequest request = new ProductRequest(
+        ProductCreateRequest request = new ProductCreateRequest(
             name, desc,
             BigDecimal.valueOf(price),
             originalPrice != null ? BigDecimal.valueOf(originalPrice) : null,
             25, partNumber, ProductStatus.ACTIVO, brandId, catId, specs,
-            List.of(new ProductRequest.ProductImageRequest(
+            List.of(new ProductCreateRequest.ProductImageRequest(
                 "https://res.cloudinary.com/dktgh8mgh/image/upload/v1779837715/" + publicId,
                 null,
                 publicId))
         );
 
-        productService.create(request);
+        productInternalService.create(request);
     }
 }

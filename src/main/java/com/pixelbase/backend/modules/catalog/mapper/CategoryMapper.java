@@ -1,9 +1,9 @@
 package com.pixelbase.backend.modules.catalog.mapper;
 
 import com.pixelbase.backend.common.config.GlobalMapperConfig;
+import com.pixelbase.backend.modules.catalog.api.admin.dto.request.CategoryCreateRequest;
+import com.pixelbase.backend.modules.catalog.api.shared.dto.response.CategoryResponse;
 import com.pixelbase.backend.modules.catalog.domain.CategoryEntity;
-import com.pixelbase.backend.modules.catalog.dto.request.CategoryRequest;
-import com.pixelbase.backend.modules.catalog.dto.response.CategoryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -19,7 +19,7 @@ public interface CategoryMapper {
      * Convierte el request a entidad. El parentId se manejará en el Service.
      */
     @Mapping(target = "parent", ignore = true)
-    CategoryEntity toEntity(CategoryRequest request);
+    CategoryEntity toEntity(CategoryCreateRequest request);
 
-    void updateEntityFromRequest(CategoryRequest request, @MappingTarget CategoryEntity entity);
+    void updateEntityFromRequest(CategoryCreateRequest request, @MappingTarget CategoryEntity entity);
 }

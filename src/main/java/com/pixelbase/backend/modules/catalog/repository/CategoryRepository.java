@@ -1,7 +1,7 @@
 package com.pixelbase.backend.modules.catalog.repository;
 
+import com.pixelbase.backend.modules.catalog.api.admin.dto.response.CategoryAdminTableResponse;
 import com.pixelbase.backend.modules.catalog.domain.CategoryEntity;
-import com.pixelbase.backend.modules.catalog.dto.response.CategoryAdminTableResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,7 +42,7 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
     long countProductsByCategoryId(@Param("categoryId") Long categoryId);
 
     @Query("""
-        SELECT new com.pixelbase.backend.modules.catalog.dto.response.CategoryAdminTableResponse(
+        SELECT new com.pixelbase.backend.modules.catalog.api.admin.dto.response.CategoryAdminTableResponse(
             c.id,
             c.name,
             c.slug,

@@ -1,6 +1,6 @@
 package com.pixelbase.backend.modules.configuration.api.web;
 
-import com.pixelbase.backend.modules.configuration.dto.response.StoreResponse;
+import com.pixelbase.backend.modules.configuration.api.web.dto.response.StoreResponse;
 import com.pixelbase.backend.modules.configuration.service.StoreInternalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

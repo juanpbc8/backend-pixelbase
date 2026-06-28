@@ -1,8 +1,8 @@
 package com.pixelbase.backend.modules.configuration.mapper;
 
 import com.pixelbase.backend.common.config.GlobalMapperConfig;
+import com.pixelbase.backend.modules.configuration.api.web.dto.response.StoreResponse;
 import com.pixelbase.backend.modules.configuration.domain.StoreEntity;
-import com.pixelbase.backend.modules.configuration.dto.response.StoreResponse;
 import com.pixelbase.backend.modules.configuration.exposed.dto.StoreSharedDto;
 import org.mapstruct.Mapper;
 
